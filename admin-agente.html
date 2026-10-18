@@ -155,22 +155,25 @@
                 if (error) { alert("Error: " + error.message); return; }
 
                 if (data.user && avatarInput.files.length > 0) {
-                    const file = avatarInput.files[0];
-                    const formData = new FormData();
-                    formData.append('files', file);
+                    let file = avatarInput.files[0];
+                    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
+                    try { file = await imageCompression(file, options); } catch (e) {}
 
                     try {
-                        const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                        const reqFirma = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
                             method: 'POST',
-                            headers: { 
-                                'Authorization': `Bearer ${data.session ? data.session.access_token : ''}`,
-                                'apikey': SUPABASE_ANON_KEY 
-                            },
-                            body: formData
+                            headers: { 'Authorization': `Bearer ${data.session ? data.session.access_token : ''}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
                         });
-                        const result = await response.json();
-                        if (response.ok && result.urls && result.urls.length > 0) {
-                            foto_perfil_url = result.urls[0];
+                        const resFirma = await reqFirma.json();
+
+                        if (resFirma.signedUrl) {
+                            const uploadRes = await fetch(resFirma.signedUrl, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': file.type || 'image/jpeg' },
+                                body: file
+                            });
+                            if (uploadRes.ok) foto_perfil_url = resFirma.publicUrl;
                         }
                     } catch (e) {
                         console.log("No se pudo subir el avatar en R2, usando por defecto.");
@@ -178,13 +181,7 @@
                 }
 
                 const { error: errPerfil } = await supabaseClient.from('agentes').insert([{
-                    id: data.user.id,
-                    email,
-                    nombre_completo: nombre,
-                    codigo_asesor: codigo,
-                    telefono,
-                    foto_perfil_url,
-                    aprobado: false
+                    id: data.user.id, email, nombre_completo: nombre, codigo_asesor: codigo, telefono, foto_perfil_url, aprobado: false
                 }]);
 
                 if (errPerfil) { alert("Error perfil: " + errPerfil.message); return; }
@@ -201,17 +198,12 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) return;
             currentUser = session.user;
-
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
 
             const { data: agente } = await supabaseClient.from('agentes').select('*').eq('id', currentUser.id).single();
             currentAgente = agente;
-
-            if (!agente) {
-                document.getElementById('welcome-msg').innerText = "Perfil no encontrado.";
-                return;
-            }
+            if (!agente) { document.getElementById('welcome-msg').innerText = "Perfil no encontrado."; return; }
 
             document.getElementById('welcome-msg').innerText = `Hola, ${agente.nombre_completo} (${agente.codigo_asesor})`;
             if (agente.foto_perfil_url) {
@@ -229,35 +221,37 @@
         }
 
         async function actualizarFotoPerfil(event) {
-            const file = event.target.files[0];
+            let file = event.target.files[0];
             if (!file) return;
 
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                const formData = new FormData();
-                formData.append('files', file);
+                const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
+                try { file = await imageCompression(file, options); } catch (e) {}
 
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                
+                const reqFirma = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
                     method: 'POST',
-                    headers: { 
-                        'Authorization': `Bearer ${session.access_token}`,
-                        'apikey': SUPABASE_ANON_KEY 
-                    },
-                    body: formData
+                    headers: { 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
                 });
 
-                const result = await response.json();
-                if (!response.ok || !result.urls || result.urls.length === 0) {
-                    throw new Error(result.error || 'No se pudo subir la nueva foto.');
-                }
+                const resFirma = await reqFirma.json();
+                if (!resFirma.signedUrl) throw new Error(resFirma.error || 'Error al obtener permiso de subida.');
 
-                const nuevaUrl = result.urls[0];
+                const uploadRes = await fetch(resFirma.signedUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': file.type || 'image/jpeg' },
+                    body: file
+                });
 
-                if (currentAgente.foto_perfil_url && currentAgente.foto_perfil_url.includes(' R2 endpoint ')) {
+                if (!uploadRes.ok) throw new Error('Fallo al enviar la imagen a Cloudflare.');
+
+                if (currentAgente.foto_perfil_url && currentAgente.foto_perfil_url.includes('cloudflare')) {
                     await borrarLoteDeR2([currentAgente.foto_perfil_url]);
                 }
 
-                const { error } = await supabaseClient.from('agentes').update({ foto_perfil_url: nuevaUrl }).eq('id', currentAgente.id);
+                const { error } = await supabaseClient.from('agentes').update({ foto_perfil_url: resFirma.publicUrl }).eq('id', currentAgente.id);
                 if (error) throw error;
 
                 alert("¡Foto de perfil actualizada con éxito!");
@@ -270,12 +264,10 @@
         async function cargarMisInmuebles() {
             const { data: inmuebles } = await supabaseClient.from('inmuebles').select('*').eq('agente_id', currentAgente.id);
             const list = document.getElementById('mis-inmuebles-list');
-
             if (!inmuebles || inmuebles.length === 0) {
                 list.innerHTML = `<p class="text-gray-500 text-sm">No tienes inmuebles registrados.</p>`;
                 return;
             }
-
             list.innerHTML = inmuebles.map(inm => `
                 <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
@@ -389,29 +381,31 @@
                     let nuevasFotos = [];
                     
                     for (let i = 0; i < fileInput.files.length; i++) {
-                        btnGuardar.innerText = `Comprimiendo y subiendo foto ${i + 1} de ${fileInput.files.length}...`;
+                        btnGuardar.innerText = `Autorizando foto ${i + 1} de ${fileInput.files.length}...`;
                         let file = fileInput.files[i];
 
                         const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true };
                         try { file = await imageCompression(file, options); } catch (e) {}
 
-                        const formData = new FormData();
-                        formData.append('files', file);
-
-                        const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                        // 1. Pedir Pase VIP a la Edge Function
+                        const reqFirma = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
                             method: 'POST',
-                            headers: { 
-                                'Authorization': `Bearer ${session.access_token}`,
-                                'apikey': SUPABASE_ANON_KEY 
-                            },
-                            body: formData
+                            headers: { 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
+                        });
+                        const resFirma = await reqFirma.json();
+                        if (!resFirma.signedUrl) throw new Error(resFirma.error || `Error en firma para la foto ${i + 1}`);
+
+                        // 2. Subir directo a Cloudflare R2
+                        btnGuardar.innerText = `Subiendo foto ${i + 1} de ${fileInput.files.length}...`;
+                        const uploadRes = await fetch(resFirma.signedUrl, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': file.type || 'image/jpeg' },
+                            body: file
                         });
 
-                        const result = await response.json();
-                        if (!response.ok) throw new Error(result.error || `Error al subir imagen ${i + 1}`);
-                        if (result.urls && result.urls.length > 0) {
-                            nuevasFotos.push(result.urls[0]);
-                        }
+                        if (!uploadRes.ok) throw new Error(`Fallo de conexión en foto ${i + 1}`);
+                        nuevasFotos.push(resFirma.publicUrl);
                     }
 
                     if (id && fotosAntiguas.length > 0) {
