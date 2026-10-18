@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control | Inmoinnova Real Estate</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-100 text-gray-900 antialiased min-h-screen flex flex-col justify-between">
+
+    <div class="max-w-5xl mx-auto px-4 py-10 w-full">
+        <!-- VISTA DE AUTENTICACIÓN -->
+        <div id="auth-section" class="bg-white p-8 rounded-2xl shadow-md max-w-md mx-auto">
+            <h2 id="auth-title" class="text-2xl font-bold mb-6 text-slate-900 text-center">Acceso Agentes Inmoinnova</h2>
+            <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+                <div id="nombre-field" class="hidden">
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nombre Completo</label>
+                    <input type="text" id="nombre" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                </div>
+                <div id="codigo-field" class="hidden">
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Código de Asesor (Ej: OFVMN)</label>
+                    <input type="text" id="codigo" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm uppercase">
+                </div>
+                <div id="telefono-field" class="hidden">
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Teléfono WhatsApp</label>
+                    <input type="text" id="telefono" placeholder="+58412..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Correo Electrónico</label>
+                    <input type="email" id="email" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Contraseña</label>
+                    <input type="password" id="password" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                </div>
+                <button type="submit" id="auth-btn" class="w-full bg-slate-900 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl transition">Iniciar Sesión</button>
+            </form>
+            <p class="text-center text-xs mt-6 text-gray-500">
+                <a href="#" onclick="toggleAuthMode()" id="auth-toggle-link" class="text-amber-600 font-semibold">¿No tienes cuenta? Regístrate aquí</a>
+            </p>
+        </div>
+
+        <!-- PANEL DE GESTIÓN (Oculto hasta iniciar sesión) -->
+        <div id="dashboard-section" class="hidden space-y-8">
+            <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div>
+                    <h1 id="welcome-msg" class="text-xl font-bold">Bienvenido</h1>
+                    <p id="estatus-msg" class="text-xs text-amber-600 font-semibold mt-1">Estatus: Verificando...</p>
+                </div>
+                <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl text-sm font-medium transition">Cerrar Sesión</button>
+            </div>
+
+            <!-- FORMULARIO DE CARGA / EDICIÓN -->
+            <div id="panel-carga" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hidden">
+                <h3 id="form-title" class="text-lg font-bold mb-4">Registrar Nuevo Inmueble</h3>
+                <form onsubmit="guardarInmueble(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" id="edit-inmueble-id">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Operación</label>
+                        <select id="inm-operacion" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
+                            <option value="venta">Venta</option>
+                            <option value="alquiler">Alquiler</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tipo</label>
+                        <select id="inm-tipo" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
+                            <option value="apartamento">Apartamento</option>
+                            <option value="casa">Casa / Townhouse</option>
+                            <option value="local">Local Comercial</option>
+                            <option value="terreno">Terreno</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ciudad / Zona</label>
+                        <input type="text" id="inm-ciudad" required placeholder="Ej: El Bosque, Valencia" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Precio ($)</label>
+                        <input type="number" id="inm-precio" required placeholder="50000" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Descripción Completa (Ficha)</label>
+                        <textarea id="inm-detalles" rows="4" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm" placeholder="Detalle completo del inmueble..."></textarea>
+                    </div>
+                    <div class="md:col-span-2 flex gap-4">
+                        <button type="submit" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 rounded-xl transition">Guardar Inmueble</button>
+                        <button type="button" onclick="resetFormulario()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl transition">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- MIS INMUEBLES -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold">Mis Inmuebles</h3>
+                    <button onclick="mostrarFormularioCrear()" id="btn-nuevo-inm" class="hidden bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-600 transition">+ Nuevo Inmueble</button>
+                </div>
+                <div id="mis-inmuebles-list" class="space-y-4">
+                    <p class="text-gray-500 text-sm">Cargando inventario...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://kyxwiulxaazhyeqghjhh.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3EjwKaWsoX4lKNEBk_9k6A_u3-akbu9';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let isRegistering = false;
+        let currentUser = null;
+        let currentAgente = null;
+
+        function toggleAuthMode() {
+            isRegistering = !isRegistering;
+            document.getElementById('auth-title').innerText = isRegistering ? "Registro de Nuevo Asesor" : "Acceso Agentes Inmoinnova";
+            document.getElementById('auth-btn').innerText = isRegistering ? "Registrarse" : "Iniciar Sesión";
+            document.getElementById('auth-toggle-link').innerText = isRegistering ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate aquí";
+            document.getElementById('nombre-field').classList.toggle('hidden', !isRegistering);
+            document.getElementById('codigo-field').classList.toggle('hidden', !isRegistering);
+            document.getElementById('telefono-field').classList.toggle('hidden', !isRegistering);
+        }
+
+        async function handleAuth(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (isRegistering) {
+                const nombre = document.getElementById('nombre').value;
+                const codigo = document.getElementById('codigo').value.toUpperCase();
+                const telefono = document.getElementById('telefono').value;
+
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) { alert("Error: " + error.message); return; }
+
+                const { error: errPerfil } = await supabaseClient.from('agentes').insert([{
+                    id: data.user.id,
+                    email,
+                    nombre_completo: nombre,
+                    codigo_asesor: codigo,
+                    telefono,
+                    aprobado: false
+                }]);
+
+                if (errPerfil) { alert("Error perfil: " + errPerfil.message); return; }
+                alert("¡Registro exitoso! Pendiente de aprobación por el Bróker.");
+                location.reload();
+            } else {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) { alert("Credenciales incorrectas: " + error.message); return; }
+                verificarSesion();
+            }
+        }
+
+        async function verificarSesion() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) return;
+
+            currentUser = session.user;
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+
+            const { data: agente } = await supabaseClient.from('agentes').select('*').eq('id', currentUser.id).single();
+            currentAgente = agente;
+
+            if (!agente) {
+                document.getElementById('welcome-msg').innerText = "Perfil no encontrado.";
+                return;
+            }
+
+            document.getElementById('welcome-msg').innerText = `Hola, ${agente.nombre_completo} (${agente.codigo_asesor})`;
+            
+            if (agente.aprobado) {
+                document.getElementById('estatus-msg').innerText = "Estatus: Aprobado Activo ✅";
+                document.getElementById('panel-carga').classList.remove('hidden');
+                document.getElementById('btn-nuevo-inm').classList.remove('hidden');
+                cargarMisInmuebles();
+            } else {
+                document.getElementById('estatus-msg').innerText = "Estatus: Pendiente de aprobación por el Bróker ⏳";
+            }
+        }
+
+        async function cargarMisInmuebles() {
+            const { data: inmuebles } = await supabaseClient.from('inmuebles').select('*').eq('agente_id', currentAgente.id);
+            const list = document.getElementById('mis-inmuebles-list');
+
+            if (!inmuebles || inmuebles.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-sm">No tienes inmuebles registrados.</p>`;
+                return;
+            }
+
+            list.innerHTML = inmuebles.map(inm => `
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <span class="text-xs font-semibold uppercase px-2 py-1 bg-amber-100 text-amber-800 rounded">${inm.operacion}</span>
+                        <h4 class="font-bold text-slate-900 mt-2">${inm.tipo.toUpperCase()} en ${inm.ciudad} - $${inm.precio}</h4>
+                        <p class="text-xs text-gray-500 line-clamp-1 mt-1">${inm.detalles}</p>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button onclick='copiarFicha(${JSON.stringify(inm.detalles)})' class="flex-1 sm:flex-none bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-medium">Copiar Ficha</button>
+                        <button onclick='editarInmueble("${inm.id}", ${JSON.stringify(inm)})' class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-medium">Editar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function copiarFicha(detalles) {
+            navigator.clipboard.writeText(detalles);
+            alert("¡Ficha descriptiva copiada al portapapeles!");
+        }
+
+        function mostrarFormularioCrear() {
+            document.getElementById('form-title').innerText = "Registrar Nuevo Inmueble";
+            document.getElementById('edit-inmueble-id').value = "";
+            document.getElementById('panel-carga').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function editarInmueble(id, inm) {
+            document.getElementById('form-title').innerText = "Editar Inmueble";
+            document.getElementById('edit-inmueble-id').value = id;
+            document.getElementById('inm-operacion').value = inm.operacion;
+            document.getElementById('inm-tipo').value = inm.tipo;
+            document.getElementById('inm-ciudad').value = inm.ciudad;
+            document.getElementById('inm-precio').value = inm.precio;
+            document.getElementById('inm-detalles').value = inm.detalles;
+            document.getElementById('panel-carga').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetFormulario() {
+            document.getElementById('edit-inmueble-id').value = "";
+            document.getElementById('inm-ciudad').value = "";
+            document.getElementById('inm-precio').value = "";
+            document.getElementById('inm-detalles').value = "";
+        }
+
+        async function guardarInmueble(event) {
+            event.preventDefault();
+            const id = document.getElementById('edit-inmueble-id').value;
+            const operacion = document.getElementById('inm-operacion').value;
+            const tipo = document.getElementById('inm-tipo').value;
+            const ciudad = document.getElementById('inm-ciudad').value;
+            const precio = parseFloat(document.getElementById('inm-precio').value);
+            const detalles = document.getElementById('inm-detalles').value;
+            const fotos_urls = ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800"];
+
+            if (id) {
+                const { error } = await supabaseClient.from('inmuebles').update({ operacion, tipo, ciudad, precio, detalles }).eq('id', id);
+                if (error) { alert("Error: " + error.message); return; }
+                alert("¡Inmueble actualizado!");
+            } else {
+                const { error } = await supabaseClient.from('inmuebles').insert([{ agente_id: currentAgente.id, operacion, tipo, ciudad, precio, detalles, fotos_urls }]);
+                if (error) { alert("Error: " + error.message); return; }
+                alert("¡Inmueble registrado!");
+            }
+
+            resetFormulario();
+            cargarMisInmuebles();
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            location.reload();
+        }
+
+        verificarSesion();
+    </script>
+</body>
+</html>
