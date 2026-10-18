@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control | Inmoinnova Real Estate</title>
+    <title>Panel de Control Profesional | Inmoinnova Real Estate</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Librería de compresión de imágenes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.js"></script>
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-gray-100 text-gray-900 antialiased min-h-screen flex flex-col justify-between">
 
     <div class="max-w-5xl mx-auto px-4 py-10 w-full">
-        <!-- VISTA DE AUTENTICACIÓN -->
+        <!-- VISTA DE AUTENTICACIÓN / REGISTRO -->
         <div id="auth-section" class="bg-white p-8 rounded-2xl shadow-md max-w-md mx-auto">
-            <h2 id="auth-title" class="text-2xl font-bold mb-6 text-slate-900 text-center">Acceso Agentes Inmoinnova</h2>
+            <h2 id="auth-title" class="text-2xl font-bold mb-6 text-slate-900 text-center">Acceso Asesores Inmoinnova</h2>
             <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
                 <div id="nombre-field" class="hidden">
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nombre Completo</label>
@@ -26,6 +29,10 @@
                 <div id="telefono-field" class="hidden">
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Teléfono WhatsApp</label>
                     <input type="text" id="telefono" placeholder="+58412..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                </div>
+                <div id="avatar-field" class="hidden">
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Foto de Perfil del Asesor</label>
+                    <input type="file" id="avatar-file" accept="image/*" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2 text-sm file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-900 file:text-white hover:file:bg-amber-600">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Correo Electrónico</label>
@@ -42,17 +49,20 @@
             </p>
         </div>
 
-        <!-- PANEL DE GESTIÓN (Oculto hasta iniciar sesión) -->
+        <!-- PANEL DE GESTIÓN -->
         <div id="dashboard-section" class="hidden space-y-8">
             <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div>
-                    <h1 id="welcome-msg" class="text-xl font-bold">Bienvenido</h1>
-                    <p id="estatus-msg" class="text-xs text-amber-600 font-semibold mt-1">Estatus: Verificando...</p>
+                <div class="flex items-center gap-4">
+                    <div id="dashboard-avatar" class="w-14 h-14 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-bold text-slate-700 shadow-inner">II</div>
+                    <div>
+                        <h1 id="welcome-msg" class="text-xl font-bold">Bienvenido</h1>
+                        <p id="estatus-msg" class="text-xs text-amber-600 font-semibold mt-1">Estatus: Verificando...</p>
+                    </div>
                 </div>
                 <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl text-sm font-medium transition">Cerrar Sesión</button>
             </div>
 
-            <!-- FORMULARIO DE CARGA / EDICIÓN -->
+            <!-- FORMULARIO DE CARGA / EDICIÓN DE INMUEBLES -->
             <div id="panel-carga" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hidden">
                 <h3 id="form-title" class="text-lg font-bold mb-4">Registrar Nuevo Inmueble</h3>
                 <form onsubmit="guardarInmueble(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -82,11 +92,19 @@
                         <input type="number" id="inm-precio" required placeholder="50000" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
                     </div>
                     <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fotos del Inmueble (Hasta 30 fotos con compresión automática)</label>
+                        <input type="file" id="inm-fotos" accept="image/*" multiple class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-900 file:text-white hover:file:bg-amber-600">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Enlace de Video (Instagram Reel / YouTube opcional)</label>
+                        <input type="url" id="inm-video" placeholder="https://www.instagram.com/reel/..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div class="md:col-span-2">
                         <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Descripción Completa (Ficha)</label>
                         <textarea id="inm-detalles" rows="4" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm" placeholder="Detalle completo del inmueble..."></textarea>
                     </div>
                     <div class="md:col-span-2 flex gap-4">
-                        <button type="submit" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 rounded-xl transition">Guardar Inmueble</button>
+                        <button type="submit" id="btn-guardar" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 rounded-xl transition shadow-md">Guardar Inmueble</button>
                         <button type="button" onclick="resetFormulario()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl transition">Cancelar</button>
                     </div>
                 </form>
@@ -96,7 +114,7 @@
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-lg font-bold">Mis Inmuebles</h3>
-                    <button onclick="mostrarFormularioCrear()" id="btn-nuevo-inm" class="hidden bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-600 transition">+ Nuevo Inmueble</button>
+                    <button onclick="mostrarFormularioCrear()" id="btn-nuevo-inm" class="hidden bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-600 transition shadow">+ Nuevo Inmueble</button>
                 </div>
                 <div id="mis-inmuebles-list" class="space-y-4">
                     <p class="text-gray-500 text-sm">Cargando inventario...</p>
@@ -117,12 +135,13 @@
 
         function toggleAuthMode() {
             isRegistering = !isRegistering;
-            document.getElementById('auth-title').innerText = isRegistering ? "Registro de Nuevo Asesor" : "Acceso Agentes Inmoinnova";
+            document.getElementById('auth-title').innerText = isRegistering ? "Registro de Nuevo Asesor" : "Acceso Asesores Inmoinnova";
             document.getElementById('auth-btn').innerText = isRegistering ? "Registrarse" : "Iniciar Sesión";
             document.getElementById('auth-toggle-link').innerText = isRegistering ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate aquí";
             document.getElementById('nombre-field').classList.toggle('hidden', !isRegistering);
             document.getElementById('codigo-field').classList.toggle('hidden', !isRegistering);
             document.getElementById('telefono-field').classList.toggle('hidden', !isRegistering);
+            document.getElementById('avatar-field').classList.toggle('hidden', !isRegistering);
         }
 
         async function handleAuth(event) {
@@ -134,6 +153,23 @@
                 const nombre = document.getElementById('nombre').value;
                 const codigo = document.getElementById('codigo').value.toUpperCase();
                 const telefono = document.getElementById('telefono').value;
+                const avatarInput = document.getElementById('avatar-file');
+
+                let foto_perfil_url = "";
+                if (avatarInput.files.length > 0) {
+                    const file = avatarInput.files[0];
+                    const fileName = `avatar-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                    const { error: uploadErr } = await supabaseClient.storage
+                        .from('avatares-agentes')
+                        .upload(fileName, file);
+
+                    if (!uploadErr) {
+                        const { data: urlData } = supabaseClient.storage
+                            .from('avatares-agentes')
+                            .getPublicUrl(fileName);
+                        foto_perfil_url = urlData.publicUrl;
+                    }
+                }
 
                 const { data, error } = await supabaseClient.auth.signUp({ email, password });
                 if (error) { alert("Error: " + error.message); return; }
@@ -144,6 +180,7 @@
                     nombre_completo: nombre,
                     codigo_asesor: codigo,
                     telefono,
+                    foto_perfil_url,
                     aprobado: false
                 }]);
 
@@ -174,6 +211,9 @@
             }
 
             document.getElementById('welcome-msg').innerText = `Hola, ${agente.nombre_completo} (${agente.codigo_asesor})`;
+            if (agente.foto_perfil_url) {
+                document.getElementById('dashboard-avatar').innerHTML = `<img src="${agente.foto_perfil_url}" class="w-full h-full object-cover">`;
+            }
             
             if (agente.aprobado) {
                 document.getElementById('estatus-msg').innerText = "Estatus: Aprobado Activo ✅";
@@ -201,9 +241,11 @@
                         <h4 class="font-bold text-slate-900 mt-2">${inm.tipo.toUpperCase()} en ${inm.ciudad} - $${inm.precio}</h4>
                         <p class="text-xs text-gray-500 line-clamp-1 mt-1">${inm.detalles}</p>
                     </div>
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <button onclick='copiarFicha(${JSON.stringify(inm.detalles)})' class="flex-1 sm:flex-none bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-medium">Copiar Ficha</button>
-                        <button onclick='editarInmueble("${inm.id}", ${JSON.stringify(inm)})' class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-medium">Editar</button>
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <button onclick='copiarFicha(${JSON.stringify(inm.detalles)})' class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-amber-600 transition">Copiar Ficha</button>
+                        <button onclick='descargarLoteFotos(${JSON.stringify(inm.fotos_urls)})' class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-emerald-700 transition">Descargar Fotos</button>
+                        <button onclick='editarInmueble("${inm.id}", ${JSON.stringify(inm)})' class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-medium hover:bg-gray-300 transition">Editar</button>
+                        <button onclick='eliminarInmueble("${inm.id}")' class="bg-red-100 text-red-600 px-3 py-2 rounded-lg text-xs font-medium hover:bg-red-200 transition">Eliminar</button>
                     </div>
                 </div>
             `).join('');
@@ -214,9 +256,15 @@
             alert("¡Ficha descriptiva copiada al portapapeles!");
         }
 
+        async function descargarLoteFotos(urls) {
+            if (!urls || urls.length === 0) { alert("Este inmueble no tiene fotos."); return; }
+            urls.forEach(url => window.open(url, '_blank'));
+        }
+
         function mostrarFormularioCrear() {
             document.getElementById('form-title').innerText = "Registrar Nuevo Inmueble";
             document.getElementById('edit-inmueble-id').value = "";
+            resetFormulario();
             document.getElementById('panel-carga').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -227,6 +275,7 @@
             document.getElementById('inm-tipo').value = inm.tipo;
             document.getElementById('inm-ciudad').value = inm.ciudad;
             document.getElementById('inm-precio').value = inm.precio;
+            document.getElementById('inm-video').value = inm.video_url || "";
             document.getElementById('inm-detalles').value = inm.detalles;
             document.getElementById('panel-carga').scrollIntoView({ behavior: 'smooth' });
         }
@@ -235,7 +284,25 @@
             document.getElementById('edit-inmueble-id').value = "";
             document.getElementById('inm-ciudad').value = "";
             document.getElementById('inm-precio').value = "";
+            document.getElementById('inm-video').value = "";
             document.getElementById('inm-detalles').value = "";
+            document.getElementById('inm-fotos').value = "";
+        }
+
+        async function borrarArchivoDeR2(url) {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                await fetch(`${SUPABASE_URL}/functions/v1/delete-r2`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+            } catch (e) {
+                console.log("No se pudo eliminar el archivo físico de R2:", e);
+            }
         }
 
         async function guardarInmueble(event) {
@@ -245,20 +312,106 @@
             const tipo = document.getElementById('inm-tipo').value;
             const ciudad = document.getElementById('inm-ciudad').value;
             const precio = parseFloat(document.getElementById('inm-precio').value);
+            const video_url = document.getElementById('inm-video').value;
             const detalles = document.getElementById('inm-detalles').value;
-            const fotos_urls = ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800"];
+            const fileInput = document.getElementById('inm-fotos');
+            
+            const btnGuardar = document.getElementById('btn-guardar');
+            btnGuardar.disabled = true;
 
-            if (id) {
-                const { error } = await supabaseClient.from('inmuebles').update({ operacion, tipo, ciudad, precio, detalles }).eq('id', id);
-                if (error) { alert("Error: " + error.message); return; }
-                alert("¡Inmueble actualizado!");
-            } else {
-                const { error } = await supabaseClient.from('inmuebles').insert([{ agente_id: currentAgente.id, operacion, tipo, ciudad, precio, detalles, fotos_urls }]);
-                if (error) { alert("Error: " + error.message); return; }
-                alert("¡Inmueble registrado!");
+            try {
+                let fotos_urls = [];
+                let fotosAntiguas = [];
+
+                if (id) {
+                    const { data: antiguo } = await supabaseClient.from('inmuebles').select('fotos_urls').eq('id', id).single();
+                    if (antiguo && antiguo.fotos_urls) {
+                        fotosAntiguas = antiguo.fotos_urls;
+                        fotos_urls = [...fotosAntiguas];
+                    }
+                }
+
+                if (fileInput.files.length > 0) {
+                    if (fileInput.files.length > 30) {
+                        alert("Máximo 30 fotos permitidas por inmueble.");
+                        btnGuardar.disabled = false;
+                        return;
+                    }
+
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    let nuevasFotos = [];
+                    
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        btnGuardar.innerText = `Comprimiendo y subiendo foto ${i + 1} de ${fileInput.files.length}...`;
+                        let file = fileInput.files[i];
+
+                        const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true };
+                        try { file = await imageCompression(file, options); } catch (e) {}
+
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${session.access_token}` },
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.error || 'Error al subir imagen');
+                        nuevasFotos.push(result.url);
+                    }
+
+                    // Limpieza automática de archivos huérfanos antiguos en R2 si se reemplazaron
+                    if (id && fotosAntiguas.length > 0) {
+                        for (let urlVieja of fotosAntiguas) {
+                            await borrarArchivoDeR2(urlVieja);
+                        }
+                    }
+                    fotos_urls = nuevasFotos;
+                }
+
+                if (fotos_urls.length === 0) {
+                    fotos_urls = ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800"];
+                }
+
+                if (id) {
+                    const { error } = await supabaseClient.from('inmuebles').update({ operacion, tipo, ciudad, precio, video_url, detalles, fotos_urls }).eq('id', id);
+                    if (error) throw error;
+                    alert("¡Inmueble actualizado con éxito y archivos sincronizados!");
+                } else {
+                    const { error } = await supabaseClient.from('inmuebles').insert([{ 
+                        agente_id: currentAgente.id, 
+                        operacion, tipo, ciudad, precio, video_url, detalles, fotos_urls 
+                    }]);
+                    if (error) throw error;
+                    alert("¡Inmueble registrado con éxito!");
+                }
+
+                resetFormulario();
+                cargarMisInmuebles();
+            } catch (err) {
+                alert("Error al procesar: " + err.message);
+            } finally {
+                btnGuardar.innerText = "Guardar Inmueble";
+                btnGuardar.disabled = false;
+            }
+        }
+
+        async function eliminarInmueble(id) {
+            if (!confirm("¿Estás seguro de eliminar este inmueble? Se borrarán sus datos y se limpiarán los archivos de la nube.")) return;
+            
+            // Purga física en Cloudflare R2 antes de borrar el registro en la base de datos
+            const { data: inmueble } = await supabaseClient.from('inmuebles').select('fotos_urls').eq('id', id).single();
+            if (inmueble && inmueble.fotos_urls) {
+                for (let url of inmueble.fotos_urls) {
+                    await borrarArchivoDeR2(url);
+                }
             }
 
-            resetFormulario();
+            const { error } = await supabaseClient.from('inmuebles').delete().eq('id', id);
+            if (error) { alert("Error al eliminar: " + error.message); return; }
+            alert("Inmueble y archivos eliminados por completo sin dejar rastro.");
             cargarMisInmuebles();
         }
 
