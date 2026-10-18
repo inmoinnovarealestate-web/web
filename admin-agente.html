@@ -12,7 +12,6 @@
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-gray-100 text-gray-900 antialiased min-h-screen flex flex-col justify-between">
-
     <div class="max-w-5xl mx-auto px-4 py-10 w-full">
         <!-- VISTA DE AUTENTICACIÓN / REGISTRO -->
         <div id="auth-section" class="bg-white p-8 rounded-2xl shadow-md max-w-md mx-auto">
@@ -51,15 +50,21 @@
 
         <!-- PANEL DE GESTIÓN -->
         <div id="dashboard-section" class="hidden space-y-8">
-            <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
                 <div class="flex items-center gap-4">
-                    <div id="dashboard-avatar" class="w-14 h-14 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-bold text-slate-700 shadow-inner">II</div>
+                    <div id="dashboard-avatar" class="w-16 h-16 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-bold text-slate-700 shadow-inner border-2 border-amber-500">II</div>
                     <div>
                         <h1 id="welcome-msg" class="text-xl font-bold">Bienvenido</h1>
                         <p id="estatus-msg" class="text-xs text-amber-600 font-semibold mt-1">Estatus: Verificando...</p>
                     </div>
                 </div>
-                <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl text-sm font-medium transition">Cerrar Sesión</button>
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2 rounded-xl text-xs font-medium transition shadow-xs flex items-center gap-2">
+                        📷 Cambiar Foto
+                        <input type="file" id="nuevo-avatar-file" accept="image/*" class="hidden" onchange="actualizarFotoPerfil(event)">
+                    </label>
+                    <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl text-xs font-medium transition">Cerrar Sesión</button>
+                </div>
             </div>
 
             <!-- FORMULARIO DE CARGA / EDICIÓN DE INMUEBLES -->
@@ -149,25 +154,30 @@
                 const codigo = document.getElementById('codigo').value.toUpperCase();
                 const telefono = document.getElementById('telefono').value;
                 const avatarInput = document.getElementById('avatar-file');
-
-                let foto_perfil_url = "";
-                if (avatarInput.files.length > 0) {
-                    const file = avatarInput.files[0];
-                    const fileName = `avatar-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-                    const { error: uploadErr } = await supabaseClient.storage
-                        .from('avatares-agentes')
-                        .upload(fileName, file);
-
-                    if (!uploadErr) {
-                        const { data: urlData } = supabaseClient.storage
-                            .from('avatares-agentes')
-                            .getPublicUrl(fileName);
-                        foto_perfil_url = urlData.publicUrl;
-                    }
-                }
+                let foto_perfil_url = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200";
 
                 const { data, error } = await supabaseClient.auth.signUp({ email, password });
                 if (error) { alert("Error: " + error.message); return; }
+
+                if (data.user && avatarInput.files.length > 0) {
+                    const file = avatarInput.files[0];
+                    const formData = new FormData();
+                    formData.append('files', file);
+
+                    try {
+                        const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${data.session ? data.session.access_token : ''}` },
+                            body: formData
+                        });
+                        const result = await response.json();
+                        if (response.ok && result.urls && result.urls.length > 0) {
+                            foto_perfil_url = result.urls[0];
+                        }
+                    } catch (e) {
+                        console.log("No se pudo subir el avatar en R2, usando por defecto.");
+                    }
+                }
 
                 const { error: errPerfil } = await supabaseClient.from('agentes').insert([{
                     id: data.user.id,
@@ -217,6 +227,43 @@
                 cargarMisInmuebles();
             } else {
                 document.getElementById('estatus-msg').innerText = "Estatus: Pendiente de aprobación por el Bróker ⏳";
+            }
+        }
+
+        async function actualizarFotoPerfil(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                const formData = new FormData();
+                formData.append('files', file);
+
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${session.access_token}` },
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.urls || result.urls.length === 0) {
+                    throw new Error(result.error || 'No se pudo subir la nueva foto.');
+                }
+
+                const nuevaUrl = result.urls[0];
+
+                // Si tenía foto anterior en R2 y no es la de Unsplash, podemos limpiarla opcionalmente
+                if (currentAgente.foto_perfil_url && currentAgente.foto_perfil_url.includes(' R2 endpoint ')) {
+                    await borrarLoteDeR2([currentAgente.foto_perfil_url]);
+                }
+
+                const { error } = await supabaseClient.from('agentes').update({ foto_perfil_url: nuevaUrl }).eq('id', currentAgente.id);
+                if (error) throw error;
+
+                alert("¡Foto de perfil actualizada con éxito!");
+                verificarSesion();
+            } catch (err) {
+                alert("Error al actualizar la foto: " + err.message);
             }
         }
 
@@ -338,33 +385,35 @@
                     }
 
                     const { data: { session } } = await supabaseClient.auth.getSession();
-                    const formData = new FormData();
+                    let nuevasFotos = [];
                     
                     for (let i = 0; i < fileInput.files.length; i++) {
-                        btnGuardar.innerText = `Comprimiendo foto ${i + 1} de ${fileInput.files.length}...`;
+                        btnGuardar.innerText = `Comprimiendo y subiendo foto ${i + 1} de ${fileInput.files.length}...`;
                         let file = fileInput.files[i];
 
-                        // Compresión optimizada manteniendo resolución y nitidez perfecta para portales
                         const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true };
                         try { file = await imageCompression(file, options); } catch (e) {}
 
+                        const formData = new FormData();
                         formData.append('files', file);
+
+                        const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${session.access_token}` },
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.error || `Error al subir imagen ${i + 1}`);
+                        if (result.urls && result.urls.length > 0) {
+                            nuevasFotos.push(result.urls[0]);
+                        }
                     }
-
-                    btnGuardar.innerText = "Subiendo lote a Cloudflare R2...";
-                    const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${session.access_token}` },
-                        body: formData
-                    });
-
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.error || 'Error al subir las imágenes');
 
                     if (id && fotosAntiguas.length > 0) {
                         await borrarLoteDeR2(fotosAntiguas);
                     }
-                    fotos_urls = result.urls;
+                    fotos_urls = nuevasFotos;
                 }
 
                 if (fotos_urls.length === 0) {
