@@ -4,37 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inmoinnova Real Estate | Bienes Raíces con Respaldo Legal en Venezuela</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased">
 
-    <!-- HEADER -->
+    <!-- HEADER / NAVBAR -->
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <a href="#" class="flex items-center gap-2.5">
-                <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-white font-bold text-xl">II</div>
+                <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-white font-bold text-xl tracking-wider">II</div>
                 <div class="flex flex-col">
                     <span class="font-bold text-lg tracking-tight leading-none text-slate-900">INMOINNOVA</span>
                     <span class="text-xs font-medium text-amber-600 tracking-widest uppercase mt-0.5">Real Estate C.A.</span>
                 </div>
             </a>
+
             <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
                 <a href="#propiedades" class="text-slate-900 hover:text-amber-600 transition">Propiedades</a>
                 <a href="#respaldo-legal" class="hover:text-amber-600 transition">Respaldo Legal</a>
                 <a href="#diaspora" class="hover:text-amber-600 transition">Desde el Exterior</a>
                 <a href="admin-agentes.html" class="hover:text-amber-600 transition font-semibold text-amber-600">Acceso Asesores</a>
             </nav>
+
             <div class="flex items-center gap-4">
-                <a href="https://wa.me/584125023269" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow-sm">
+                <a href="https://wa.me/584125023269" target="_blank" class="hidden sm:inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow-sm">
                     WhatsApp
                 </a>
             </div>
         </div>
     </header>
 
-    <!-- HERO & BUSCADOR -->
+    <!-- HERO SECTION & BUSCADOR INMEDIATO -->
     <section class="relative bg-slate-900 text-white py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
         <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]"></div>
         <div class="relative max-w-7xl mx-auto text-center">
@@ -54,27 +58,27 @@
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Operación</label>
                         <select id="filtro-operacion" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-600">
-                            <option value="todos">Todas</option>
+                            <option value="todos">Todas las operaciones</option>
                             <option value="venta">Venta</option>
                             <option value="alquiler">Alquiler</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ubicación</label>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ubicación / Ciudad</label>
                         <input type="text" id="filtro-ciudad" placeholder="Ej: Valencia, San Diego..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-600">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tipo</label>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tipo de Inmueble</label>
                         <select id="filtro-tipo" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-600">
                             <option value="todos">Cualquier tipo</option>
                             <option value="apartamento">Apartamento</option>
-                            <option value="casa">Casa</option>
+                            <option value="casa">Casa / Townhouse</option>
                             <option value="local">Local Comercial</option>
                             <option value="terreno">Terreno</option>
                         </select>
                     </div>
                     <div class="flex items-end">
-                        <button onclick="cargarCatalogoPublico()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition shadow-md">
+                        <button onclick="cargarCatalogoPublico()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition shadow-md flex items-center justify-center gap-2">
                             Buscar Inmueble
                         </button>
                     </div>
@@ -83,18 +87,87 @@
         </div>
     </section>
 
-    <!-- PORTAFOLIO GENERAL -->
+    <!-- SECCIÓN PRINCIPAL: INMUEBLES EN TIEMPO REAL DESDE SUPABASE -->
     <section id="propiedades" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
             <div>
                 <span class="text-amber-600 font-semibold text-sm uppercase tracking-wider">Portafolio Activo</span>
                 <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Propiedades Disponibles</h2>
             </div>
-            <p class="text-sm text-gray-500 mt-2 md:mt-0">Sincronizado en tiempo real desde Supabase R2.</p>
+            <p class="text-sm text-gray-500 mt-2 md:mt-0">Actualizado en tiempo real desde nuestra base de datos.</p>
         </div>
 
+        <!-- GRID DE PROPIEDADES DINÁMICO -->
         <div id="grid-inmuebles-publico" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <p class="text-gray-500 col-span-3 text-center py-10">Cargando propiedades...</p>
+        </div>
+    </section>
+
+    <!-- PILARES: RESPALDO LEGAL -->
+    <section id="respaldo-legal" class="py-20 bg-white border-y border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-amber-600 font-semibold text-sm uppercase tracking-wider">Nuestra Esencia</span>
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Vendemos tranquilidad, no solo propiedades</h2>
+                <p class="text-gray-600 mt-4">En un mercado donde la duda es la norma, en Inmoinnova el respaldo legal en cada paso no es un extra — es el corazón de nuestra marca.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                    <div class="w-12 h-12 bg-amber-600/10 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">I</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Respaldo Jurídico Senior</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Acompañamiento directo de abogados en cada documento, desde la redacción de la oferta y compromiso bilateral hasta la firma definitiva en el Registro.</p>
+                </div>
+                <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                    <div class="w-12 h-12 bg-amber-600/10 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">II</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Inmuebles Verificados</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Cada inmueble es previamente inspeccionado, auditado en su tracto sucesivo y evaluado con dictamen legal antes de publicarse en nuestro inventario.</p>
+                </div>
+                <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                    <div class="w-12 h-12 bg-amber-600/10 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">III</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Respuesta Inmediata</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Atención ágil y directa por WhatsApp y canales digitales, estés en Venezuela o formando parte de la diáspora en el exterior.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CLIENTES DESDE EL EXTERIOR (DIÁSPORA) -->
+    <section id="diaspora" class="py-20 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <span class="text-amber-400 font-semibold text-sm uppercase tracking-wider">Para la Diáspora</span>
+                    <h2 class="text-3xl lg:text-4xl font-bold tracking-tight mt-2 mb-6">Compra o vende en Venezuela desde donde estés con seguridad absoluta</h2>
+                    <p class="text-gray-300 mb-8 leading-relaxed">Sabemos que el temor número uno es comprar o vender sin ver. Por eso nuestro proceso está diseñado para darte total certeza jurídica y transparencia en cada etapa.</p>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mt-0.5">1</span>
+                            <div><strong class="text-white">Explora el portafolio:</strong> Selecciona el inmueble de tu interés y contáctanos directamente.</div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mt-0.5">2</span>
+                            <div><strong class="text-white">Visita en video en vivo:</strong> Un asesor te muestra el inmueble en videollamada, sin filtros y en tiempo real.</div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mt-0.5">3</span>
+                            <div><strong class="text-white">Auditoría legal previa:</strong> Revisamos titularidad, solvencias y documentos antes de cualquier desembolso.</div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mt-0.5">4</span>
+                            <div><strong class="text-white">Firma segura:</strong> Acompañamiento legal hasta el registro, incluyendo gestión mediante poderes si no puedes viajar.</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700">
+                    <h3 class="text-2xl font-bold mb-4">¿Tienes una propiedad en Venezuela?</h3>
+                    <p class="text-gray-300 text-sm mb-6">Ponemos tu inmueble en manos de compradores calificados nacionales e internacionales con avalúo profesional y marketing digital premium.</p>
+                    <a href="https://wa.me/584125023269?text=Hola,%20deseo%20publicar%20mi%20propiedad%20con%20Inmoinnova" target="_blank" class="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded-xl transition">
+                        Quiero publicar mi propiedad
+                    </a>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -105,11 +178,16 @@
                 <div class="w-8 h-8 rounded-lg bg-amber-600 flex items-center justify-center text-white font-bold text-sm">II</div>
                 <span class="font-bold text-white tracking-tight">INMOINNOVA REAL ESTATE C.A.</span>
             </div>
-            <p class="text-xs text-center md:text-left">© 2026 Inmoinnova Real Estate C.A. Valencia, Carabobo, Venezuela.</p>
+            <p class="text-xs text-center md:text-left">
+                © 2026 Inmoinnova Real Estate C.A. Valencia, Carabobo, Venezuela. Todos los derechos reservados.
+            </p>
+            <div class="flex items-center gap-4 text-sm">
+                <a href="admin-agentes.html" class="hover:text-white transition">Acceso Asesores</a>
+            </div>
         </div>
     </footer>
 
-    <!-- SUPABASE SCRIPT -->
+    <!-- SUPABASE SCRIPT & CONEXIÓN DINÁMICA -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://kyxwiulxaazhyeqghjhh.supabase.co';
@@ -147,8 +225,8 @@
             grid.innerHTML = filtrados.map(inm => `
                 <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition flex flex-col">
                     <div class="relative h-64 bg-gray-200">
-                        <img src="${inm.fotos_urls[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800'}" class="w-full h-full object-cover">
-                        <span class="absolute top-4 left-4 bg-slate-900/80 text-white text-xs font-semibold px-3 py-1.5 rounded-lg uppercase">${inm.operacion}</span>
+                        <img src="${inm.fotos_urls[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800'}" alt="Inmueble" class="w-full h-full object-cover">
+                        <span class="absolute top-4 left-4 bg-slate-900/80 backdrop-blur text-white text-xs font-semibold px-3 py-1.5 rounded-lg uppercase">${inm.operacion}</span>
                         <span class="absolute bottom-4 left-4 bg-amber-600 text-white font-bold text-lg px-3 py-1 rounded-lg shadow">$${inm.precio}</span>
                     </div>
                     <div class="p-6 flex-1 flex flex-col justify-between">
@@ -159,8 +237,8 @@
                         </div>
                         <div>
                             <div class="text-xs text-amber-600 font-semibold mb-3">Asesor: ${inm.agentes ? inm.agentes.nombre_completo : 'Inmoinnova'}</div>
-                            <a href="https://wa.me/${inm.agentes ? inm.agentes.telefono : '584125023269'}?text=Hola,%20me%20interesa%20esta%20propiedad" target="_blank" class="w-full block text-center bg-slate-900 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl text-sm transition">
-                                Contactar Asesor
+                            <a href="https://wa.me/${inm.agentes ? inm.agentes.telefono : '584125023269'}?text=Hola,%20me%20interesa%20esta%20propiedad:%20${encodeURIComponent(inm.detalles)}" target="_blank" class="w-full block text-center bg-slate-900 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl text-sm transition">
+                                Contactar con Asesor
                             </a>
                         </div>
                     </div>
