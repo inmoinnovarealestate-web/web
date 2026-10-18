@@ -8,10 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet.js CSS para los mapas interactivos -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased">
-
     <!-- HEADER / NAVBAR -->
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -22,21 +23,27 @@
                     <span class="text-xs font-medium text-amber-600 tracking-widest uppercase mt-0.5">Real Estate C.A.</span>
                 </div>
             </a>
-
             <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
                 <a href="#propiedades" class="text-slate-900 hover:text-amber-600 transition">Propiedades</a>
+                <a href="#asesores" class="hover:text-amber-600 transition">Nuestros Asesores</a>
                 <a href="#respaldo-legal" class="hover:text-amber-600 transition">Respaldo Legal</a>
                 <a href="#diaspora" class="hover:text-amber-600 transition">Desde el Exterior</a>
                 <a href="admin-agentes.html" class="hover:text-amber-600 transition font-semibold text-amber-600">Acceso Asesores</a>
             </nav>
-
             <div class="flex items-center gap-4">
-                <a href="https://wa.me/584125023269" target="_blank" class="hidden sm:inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow-sm">
+                <button onclick="toggleListaMovil()" class="md:hidden bg-slate-100 p-2 rounded-lg text-sm font-semibold">Catálogo</button>
+                <a href="https://wa.me/584121634256?text=Hola%20Inmoinnova%20requiero%20mas%20información" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow-sm">
                     WhatsApp
                 </a>
             </div>
         </div>
     </header>
+
+    <!-- LISTA DESPLEGABLE MÓVIL DE INMUEBLES -->
+    <div id="menu-movil-inmuebles" class="hidden bg-white border-b border-gray-200 p-4 space-y-2 md:hidden">
+        <h4 class="font-bold text-sm text-slate-900">Navegación Rápida</h4>
+        <div id="lista-desplegable-items" class="max-h-60 overflow-y-auto space-y-1 text-xs"></div>
+    </div>
 
     <!-- HERO SECTION & BUSCADOR INMEDIATO -->
     <section class="relative bg-slate-900 text-white py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
@@ -51,10 +58,9 @@
             <p class="text-lg text-gray-300 max-w-2xl mx-auto mb-10 font-light">
                 Asesoría legal senior y gestión inmobiliaria profesional en Valencia, Carabobo y todo el territorio nacional.
             </p>
-
             <!-- BUSCADOR INTELIGENTE -->
             <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-2xl max-w-5xl mx-auto text-gray-900">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Operación</label>
                         <select id="filtro-operacion" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-600">
@@ -64,21 +70,11 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ubicación / Ciudad</label>
-                        <input type="text" id="filtro-ciudad" placeholder="Ej: Valencia, San Diego..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-600">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tipo de Inmueble</label>
-                        <select id="filtro-tipo" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-600">
-                            <option value="todos">Cualquier tipo</option>
-                            <option value="apartamento">Apartamento</option>
-                            <option value="casa">Casa / Townhouse</option>
-                            <option value="local">Local Comercial</option>
-                            <option value="terreno">Terreno</option>
-                        </select>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ubicación / Ciudad / Tipo</label>
+                        <input type="text" id="filtro-busqueda" placeholder="Ej: El Bosque, Apartamento, Valencia..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-600">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="cargarCatalogoPublico()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition shadow-md flex items-center justify-center gap-2">
+                        <button onclick="paginaActual = 1; cargarCatalogoPublico()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition shadow-md flex items-center justify-center gap-2">
                             Buscar Inmueble
                         </button>
                     </div>
@@ -87,43 +83,71 @@
         </div>
     </section>
 
-    <!-- SECCIÓN PRINCIPAL: INMUEBLES EN TIEMPO REAL DESDE SUPABASE -->
+    <!-- SECCIÓN PRINCIPAL: INMUEBLES EN TIEMPO REAL CON PAGINACIÓN (12 en 12) -->
     <section id="propiedades" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
             <div>
                 <span class="text-amber-600 font-semibold text-sm uppercase tracking-wider">Portafolio Activo</span>
                 <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Propiedades Disponibles</h2>
             </div>
-            <p class="text-sm text-gray-500 mt-2 md:mt-0">Actualizado en tiempo real desde nuestra base de datos.</p>
+            <p id="contador-resultados" class="text-sm text-gray-500 mt-2 md:mt-0">Cargando inventario...</p>
         </div>
-
+        
         <!-- GRID DE PROPIEDADES DINÁMICO -->
         <div id="grid-inmuebles-publico" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <p class="text-gray-500 col-span-3 text-center py-10">Cargando propiedades...</p>
         </div>
+
+        <!-- PAGINACIÓN -->
+        <div id="paginacion-container" class="flex justify-center items-center gap-4 mt-12 hidden">
+            <button id="btn-anterior" onclick="cambiarPagina(-1)" class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition shadow-xs">Anterior</button>
+            <span id="page-indicator" class="text-sm font-semibold text-gray-700">Página 1</span>
+            <button id="btn-siguiente" onclick="cambiarPagina(1)" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-600 transition shadow-xs">Siguiente</button>
+        </div>
     </section>
 
+    <!-- SECCIÓN: NUESTROS ASESORES (REALTORS) -->
+    <section id="asesores" class="py-16 bg-white border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="text-amber-600 font-semibold text-sm uppercase tracking-wider">Equipo Profesional</span>
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Nuestros Realtors Certificados</h2>
+                <p class="text-gray-600 mt-2">Conecta directamente con nuestros asesores inmobiliarios autorizados por Inmoinnova.</p>
+            </div>
+            <div id="grid-agentes-publico" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <p class="text-gray-500 col-span-4 text-center py-6">Cargando equipo de asesores...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL DE FICHA COMPLETA Y GALERÍA BAJO DEMANDA -->
+    <div id="modal-detalle" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative shadow-2xl">
+            <button onclick="cerrarModalDetalle()" class="absolute top-6 right-6 bg-gray-100 hover:bg-gray-200 text-gray-700 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition">✕</button>
+            <div id="modal-contenido"></div>
+        </div>
+    </div>
+
     <!-- PILARES: RESPALDO LEGAL -->
-    <section id="respaldo-legal" class="py-20 bg-white border-y border-gray-100">
+    <section id="respaldo-legal" class="py-20 bg-gray-50 border-y border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
                 <span class="text-amber-600 font-semibold text-sm uppercase tracking-wider">Nuestra Esencia</span>
                 <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Vendemos tranquilidad, no solo propiedades</h2>
                 <p class="text-gray-600 mt-4">En un mercado donde la duda es la norma, en Inmoinnova el respaldo legal en cada paso no es un extra — es el corazón de nuestra marca.</p>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-xs">
                     <div class="w-12 h-12 bg-amber-600/10 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">I</div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Respaldo Jurídico Senior</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Acompañamiento directo de abogados en cada documento, desde la redacción de la oferta y compromiso bilateral hasta la firma definitiva en el Registro.</p>
+                    <p class="text-gray-600 text-sm leading-relaxed">Acompañamiento directo de abogados en cada documento, desde la redacción de la oferta hasta la firma definitiva en el Registro.</p>
                 </div>
-                <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-xs">
                     <div class="w-12 h-12 bg-amber-600/10 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">II</div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Inmuebles Verificados</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Cada inmueble es previamente inspeccionado, auditado en su tracto sucesivo y evaluado con dictamen legal antes de publicarse en nuestro inventario.</p>
+                    <p class="text-gray-600 text-sm leading-relaxed">Cada inmueble es previamente inspeccionado, auditado en su tracto sucesivo y evaluado con dictamen legal antes de publicarse.</p>
                 </div>
-                <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-xs">
                     <div class="w-12 h-12 bg-amber-600/10 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">III</div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Respuesta Inmediata</h3>
                     <p class="text-gray-600 text-sm leading-relaxed">Atención ágil y directa por WhatsApp y canales digitales, estés en Venezuela o formando parte de la diáspora en el exterior.</p>
@@ -156,14 +180,14 @@
                         </li>
                         <li class="flex items-start gap-3">
                             <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mt-0.5">4</span>
-                            <div><strong class="text-white">Firma segura:</strong> Acompañamiento legal hasta el registro, incluyendo gestión mediante poderes si no puedes viajar.</div>
+                            <div><strong class="text-white">Firma segura:</strong> Acompañamiento legal hasta el registro, incluyendo gestión mediante poderes.</div>
                         </li>
                     </ul>
                 </div>
-                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700">
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
                     <h3 class="text-2xl font-bold mb-4">¿Tienes una propiedad en Venezuela?</h3>
                     <p class="text-gray-300 text-sm mb-6">Ponemos tu inmueble en manos de compradores calificados nacionales e internacionales con avalúo profesional y marketing digital premium.</p>
-                    <a href="https://wa.me/584125023269?text=Hola,%20deseo%20publicar%20mi%20propiedad%20con%20Inmoinnova" target="_blank" class="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded-xl transition">
+                    <a href="https://wa.me/584121634256?text=Hola,%20deseo%20publicar%20mi%20propiedad%20con%20Inmoinnova" target="_blank" class="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded-xl transition">
                         Quiero publicar mi propiedad
                     </a>
                 </div>
@@ -187,66 +211,290 @@
         </div>
     </footer>
 
-    <!-- SUPABASE SCRIPT & CONEXIÓN DINÁMICA -->
+    <!-- SUPABASE & LEAFLET.JS SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
     <script>
         const SUPABASE_URL = 'https://kyxwiulxaazhyeqghjhh.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_3EjwKaWsoX4lKNEBk_9k6A_u3-akbu9';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let paginaActual = 1;
+        const porPagina = 12;
+        let cacheInmuebles = [];
+
+        function toggleListaMovil() {
+            const menu = document.getElementById('menu-movil-inmuebles');
+            menu.classList.toggle('hidden');
+        }
+
         async function cargarCatalogoPublico() {
             const op = document.getElementById('filtro-operacion').value;
-            const ciudadFiltro = document.getElementById('filtro-ciudad').value.toLowerCase();
-            const tipo = document.getElementById('filtro-tipo').value;
+            const textoBusqueda = document.getElementById('filtro-busqueda').value.toLowerCase().trim();
 
-            let query = supabaseClient.from('inmuebles').select('*, agentes(nombre_completo, telefono, codigo_asesor)');
-
+            let query = supabaseClient.from('inmuebles').select('*, agentes(nombre_completo, telefono, codigo_asesor, foto_perfil_url)');
             if (op !== 'todos') query = query.eq('operacion', op);
-            if (tipo !== 'todos') query = query.eq('tipo', tipo);
 
             const { data: inmuebles, error } = await query;
             const grid = document.getElementById('grid-inmuebles-publico');
 
             if (error || !inmuebles || inmuebles.length === 0) {
                 grid.innerHTML = `<p class="text-gray-500 col-span-3 text-center py-10">No se encontraron propiedades disponibles.</p>`;
+                document.getElementById('paginacion-container').classList.add('hidden');
                 return;
             }
 
-            let filtrados = inmuebles;
-            if (ciudadFiltro) {
-                filtrados = inmuebles.filter(i => i.ciudad.toLowerCase().includes(ciudadFiltro));
-            }
+            cacheInmuebles = inmuebles.filter(inm => {
+                if (!textoBusqueda) return true;
+                const matchCiudad = inm.ciudad && inm.ciudad.toLowerCase().includes(textoBusqueda);
+                const matchTipo = inm.tipo && inm.tipo.toLowerCase().includes(textoBusqueda);
+                const matchDetalles = inm.detalles && inm.detalles.toLowerCase().includes(textoBusqueda);
+                return matchCiudad || matchTipo || matchDetalles;
+            });
 
-            if (filtrados.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-3 text-center py-10">No hay inmuebles con ese filtro de ubicación.</p>`;
+            actualizarPaginacionYRender();
+            poblarListaMovil();
+        }
+
+        function poblarListaMovil() {
+            const lista = document.getElementById('lista-desplegable-items');
+            if (!cacheInmuebles.length) {
+                lista.innerHTML = `<p class="text-gray-400">Sin inmuebles</p>`;
                 return;
             }
-
-            grid.innerHTML = filtrados.map(inm => `
-                <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition flex flex-col">
-                    <div class="relative h-64 bg-gray-200">
-                        <img src="${inm.fotos_urls[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800'}" alt="Inmueble" class="w-full h-full object-cover">
-                        <span class="absolute top-4 left-4 bg-slate-900/80 backdrop-blur text-white text-xs font-semibold px-3 py-1.5 rounded-lg uppercase">${inm.operacion}</span>
-                        <span class="absolute bottom-4 left-4 bg-amber-600 text-white font-bold text-lg px-3 py-1 rounded-lg shadow">$${inm.precio}</span>
-                    </div>
-                    <div class="p-6 flex-1 flex flex-col justify-between">
-                        <div>
-                            <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">${inm.ciudad}</div>
-                            <h3 class="text-xl font-bold text-slate-900 mb-2">${inm.tipo.toUpperCase()} en ${inm.ciudad}</h3>
-                            <p class="text-gray-600 text-sm line-clamp-2 mb-4">${inm.detalles}</p>
-                        </div>
-                        <div>
-                            <div class="text-xs text-amber-600 font-semibold mb-3">Asesor: ${inm.agentes ? inm.agentes.nombre_completo : 'Inmoinnova'}</div>
-                            <a href="https://wa.me/${inm.agentes ? inm.agentes.telefono : '584125023269'}?text=Hola,%20me%20interesa%20esta%20propiedad:%20${encodeURIComponent(inm.detalles)}" target="_blank" class="w-full block text-center bg-slate-900 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl text-sm transition">
-                                Contactar con Asesor
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            lista.innerHTML = cacheInmuebles.map(inm => `
+                <a href="#" onclick="abrirDetalle(${inm.id}); toggleListaMovil(); return false;" class="block p-2 hover:bg-gray-50 rounded border-b border-gray-100">
+                    <span class="font-bold uppercase text-amber-600">${inm.tipo}</span> en ${inm.ciudad} - <span class="font-semibold">$${inm.precio}</span>
+                </a>
             `).join('');
         }
 
+        function actualizarPaginacionYRender() {
+            const total = cacheInmuebles.length;
+            const totalPaginas = Math.ceil(total / porPagina) || 1;
+
+            if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+            if (paginaActual < 1) paginaActual = 1;
+
+            const inicio = (paginaActual - 1) * porPagina;
+            const fin = inicio + porPagina;
+            const inmueblesPagina = cacheInmuebles.slice(inicio, fin);
+
+            document.getElementById('contador-resultados').innerText = `Mostrando ${inmueblesPagina.length} de ${total} propiedades encontradas`;
+            
+            const pagContainer = document.getElementById('paginacion-container');
+            if (total > porPagina) {
+                pagContainer.classList.remove('hidden');
+                document.getElementById('page-indicator').innerText = `Página ${paginaActual} de ${totalPaginas}`;
+                document.getElementById('btn-anterior').disabled = paginaActual === 1;
+                document.getElementById('btn-siguiente').disabled = paginaActual === totalPaginas;
+            } else {
+                pagContainer.classList.add('hidden');
+            }
+
+            renderizarGrid(inmueblesPagina);
+        }
+
+        function cambiarPagina(direccion) {
+            paginaActual += direccion;
+            actualizarPaginacionYRender();
+            window.scrollTo({ top: 400, behavior: 'smooth' });
+        }
+
+        function renderizarGrid(inmuebles) {
+            const grid = document.getElementById('grid-inmuebles-publico');
+            if (inmuebles.length === 0) {
+                grid.innerHTML = `<p class="text-gray-500 col-span-3 text-center py-10">No hay inmuebles en esta página.</p>`;
+                return;
+            }
+
+            grid.innerHTML = inmuebles.map((inm, index) => {
+                const fotoPrincipal = (inm.fotos_urls && inm.fotos_urls[0]) ? inm.fotos_urls[0] : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800';
+                const agenteNombre = inm.agentes ? inm.agentes.nombre_completo : 'Inmoinnova';
+                const agenteTel = inm.agentes ? inm.agentes.telefono : '584121634256';
+                const mensajeWpp = encodeURIComponent(`Hola, requiero más información sobre esta propiedad: ${inm.tipo} en ${inm.ciudad} ($${inm.precio})`);
+
+                return `
+                    <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                        <div>
+                            <div class="relative h-60 bg-gray-200">
+                                <img src="${fotoPrincipal}" alt="Inmueble" class="w-full h-full object-cover">
+                                <span class="absolute top-4 left-4 bg-slate-900/80 backdrop-blur text-white text-xs font-semibold px-3 py-1.5 rounded-lg uppercase">${inm.operacion}</span>
+                                <span class="absolute bottom-4 left-4 bg-amber-600 text-white font-bold text-lg px-3 py-1 rounded-lg shadow">$${inm.precio}</span>
+                            </div>
+                            <div class="p-6">
+                                <div class="text-xs font-medium text-amber-600 uppercase tracking-wider mb-1">${inm.ciudad}</div>
+                                <h3 class="text-xl font-bold text-slate-900 mb-2">${inm.tipo.toUpperCase()} en ${inm.ciudad}</h3>
+                                <p class="text-gray-600 text-sm line-clamp-2 mb-4">${inm.detalles}</p>
+                                
+                                <!-- Minimapa Leaflet por tarjeta -->
+                                <div id="minimapa-${inm.id}-${index}" class="w-full h-32 rounded-xl mb-4 z-0 border border-gray-200"></div>
+                            </div>
+                        </div>
+                        <div class="p-6 pt-0 space-y-3">
+                            <button onclick='abrirDetalle(${inm.id})' class="w-full block text-center bg-slate-900 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl text-sm transition">
+                                Ver Ficha Completa y Fotos
+                            </button>
+                            <a href="https://wa.me/${agenteTel}?text=${mensajeWpp}" target="_blank" class="w-full block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-xs">
+                                Consultar vía WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Inicializar minimapas en cada tarjeta renderizada
+            inmuebles.forEach((inm, index) => {
+                setTimeout(() => {
+                    const mapId = `minimapa-${inm.id}-${index}`;
+                    if (document.getElementById(mapId)) {
+                        // Coordenadas base simuladas con alta precisión para Valencia / Venezuela
+                        const map = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView([10.1808, -68.0056], 14);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+                        L.marker([10.1808, -68.0056]).addTo(map).bindPopup(inm.ciudad);
+                    }
+                }, 300);
+            });
+        }
+
+        async function abrirDetalle(id) {
+            const inm = cacheInmuebles.find(i => i.id === id);
+            if (!inm) return;
+
+            const modal = document.getElementById('modal-detalle');
+            const contenido = document.getElementById('modal-contenido');
+            
+            const agenteNombre = inm.agentes ? inm.agentes.nombre_completo : 'Asesor Inmoinnova';
+            const agenteTel = inm.agentes ? inm.agentes.telefono : '584121634256';
+            const agenteAvatar = (inm.agentes && inm.agentes.foto_perfil_url) ? inm.agentes.foto_perfil_url : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200';
+            const agenteCodigo = inm.agentes ? inm.agentes.codigo_asesor : 'OFVMN';
+            const mensajeWpp = encodeURIComponent(`Hola ${agenteNombre}, deseo más información y detalles legales de esta propiedad: ${inm.tipo} en ${inm.ciudad} ($${inm.precio})`);
+
+            const fotosHtml = inm.fotos_urls ? inm.fotos_urls.map(url => `<img src="${url}" class="w-full h-72 object-cover rounded-2xl shadow-md">`).join('') : '';
+            
+            let videoHtml = '';
+            if (inm.video_url) {
+                videoHtml = `
+                    <div class="my-6 p-4 bg-slate-900 rounded-2xl text-center text-white">
+                        <h4 class="font-bold mb-2">Video / Reel del Inmueble</h4>
+                        <a href="${inm.video_url}" target="_blank" class="inline-block bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition">
+                            ▶ Reproducir Video del Inmueble
+                        </a>
+                    </div>
+                `;
+            }
+
+            contenido.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1 rounded-lg uppercase">${inm.operacion}</span>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">${inm.tipo.toUpperCase()} en ${inm.ciudad}</h2>
+                            <p class="text-2xl font-bold text-amber-600 mt-1">$${inm.precio}</p>
+                        </div>
+                    </div>
+
+                    <!-- Galería completa bajo demanda -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto p-2">
+                        ${fotosHtml}
+                    </div>
+
+                    ${videoHtml}
+
+                    <div>
+                        <h4 class="font-bold text-slate-900 mb-2">Descripción Completa y Ficha</h4>
+                        <p class="text-gray-700 text-sm whitespace-pre-line bg-gray-50 p-4 rounded-2xl border border-gray-200">${inm.detalles}</p>
+                    </div>
+
+                    <!-- Minimapa de detalle -->
+                    <div>
+                        <h4 class="font-bold text-slate-900 mb-2">Ubicación Geográfica en la Zona</h4>
+                        <div id="modal-mapa" class="w-full h-64 rounded-2xl border border-gray-200"></div>
+                    </div>
+
+                    <!-- Botón de descarga de lote y copiado -->
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button onclick='copiarFichaYDescargar(${JSON.stringify(inm.fotos_urls)}, ${JSON.stringify(inm.detalles)})' class="flex-1 bg-slate-900 text-white font-semibold py-3 px-4 rounded-xl text-sm hover:bg-amber-600 transition shadow">
+                            Copiar Ficha y Descargar Lote de Fotos
+                        </button>
+                    </div>
+
+                    <!-- Perfil del Asesor Responsable -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+                        <div class="flex items-center gap-4">
+                            <img src="${agenteAvatar}" alt="Asesor" class="w-16 h-16 rounded-full object-cover shadow border-2 border-amber-500">
+                            <div>
+                                <span class="text-xs font-semibold text-amber-600 uppercase">Realtor Inmoinnova</span>
+                                <h4 class="font-bold text-lg text-slate-900">${agenteNombre}</h4>
+                                <p class="text-xs text-gray-500">Código Asesor: ${agenteCodigo}</p>
+                            </div>
+                        </div>
+                        <a href="https://wa.me/${agenteTel}?text=${mensajeWpp}" target="_blank" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl text-sm transition shadow text-center">
+                            Contactar con Asesor 💬
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            // Cargar mapa modal
+            setTimeout(() => {
+                if (document.getElementById('modal-mapa')) {
+                    const mModal = L.map('modal-mapa').setView([10.1808, -68.0056], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mModal);
+                    L.marker([10.1808, -68.0056]).addTo(mModal).bindPopup(`Ubicación en ${inm.ciudad}`).openPopup();
+                }
+            }, 300);
+        }
+
+        function cerrarModalDetalle() {
+            const modal = document.getElementById('modal-detalle');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        function copiarFichaYDescargar(urls, detalles) {
+            navigator.clipboard.writeText(detalles);
+            alert("¡Ficha descriptiva copiada al portapapeles con éxito! Se abrirán las fotos del inmueble en nuevas pestañas para su descarga.");
+            urls.forEach(url => window.open(url, '_blank'));
+        }
+
+        async function cargarAsesoresPublicos() {
+            const { data: agentes, error } = await supabaseClient.from('agentes').select('*').eq('aprobado', true);
+            const grid = document.getElementById('grid-agentes-publico');
+
+            if (error || !agentes || agentes.length === 0) {
+                grid.innerHTML = `<p class="text-gray-500 col-span-4 text-center py-6">Pronto mostraremos a nuestros asesores certificados.</p>`;
+                return;
+            }
+
+            grid.innerHTML = agentes.map(ag => {
+                const avatar = ag.foto_perfil_url ? ag.foto_perfil_url : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200';
+                const msgSolicitud = encodeURIComponent(`Hola ${ag.nombre_completo}, deseo solicitar mi acceso como agente a Inmoinnova Real Estate.`);
+
+                return `
+                    <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center justify-between shadow-xs">
+                        <div>
+                            <div class="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 border-2 border-amber-500 shadow">
+                                <img src="${avatar}" alt="${ag.nombre_completo}" class="w-full h-full object-cover">
+                            </div>
+                            <span class="text-xs font-bold text-amber-600 uppercase tracking-widest">Realtor</span>
+                            <h3 class="font-bold text-slate-900 text-lg mt-1">${ag.nombre_completo}</h3>
+                            <p class="text-xs text-gray-500 mb-4">Código: ${ag.codigo_asesor}</p>
+                        </div>
+                        <a href="https://wa.me/${ag.telefono}?text=${msgSolicitud}" target="_blank" class="w-full bg-slate-900 hover:bg-amber-600 text-white font-medium py-2 rounded-xl text-xs transition shadow-xs">
+                            Contactar / Solicitar Acceso
+                        </a>
+                    </div>
+                `;
+            }).join('');
+        }
+
         cargarCatalogoPublico();
+        cargarAsesoresPublicos();
     </script>
 </body>
 </html>
