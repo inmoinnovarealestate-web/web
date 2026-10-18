@@ -47,7 +47,6 @@
                 <a href="#" onclick="toggleAuthMode()" id="auth-toggle-link" class="text-amber-600 font-semibold">¿No tienes cuenta? Regístrate aquí</a>
             </p>
         </div>
-
         <!-- PANEL DE GESTIÓN -->
         <div id="dashboard-section" class="hidden space-y-8">
             <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
@@ -66,7 +65,6 @@
                     <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl text-xs font-medium transition">Cerrar Sesión</button>
                 </div>
             </div>
-
             <!-- FORMULARIO DE CARGA / EDICIÓN DE INMUEBLES -->
             <div id="panel-carga" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hidden">
                 <h3 id="form-title" class="text-lg font-bold mb-4">Registrar Nuevo Inmueble</h3>
@@ -109,7 +107,6 @@
                     </div>
                 </form>
             </div>
-
             <!-- MIS INMUEBLES -->
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex justify-between items-center mb-6">
@@ -122,13 +119,11 @@
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://kyxwiulxaazhyeqghjhh.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_3EjwKaWsoX4lKNEBk_9k6A_u3-akbu9';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         let isRegistering = false;
         let currentUser = null;
         let currentAgente = null;
@@ -167,7 +162,10 @@
                     try {
                         const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
                             method: 'POST',
-                            headers: { 'Authorization': `Bearer ${data.session ? data.session.access_token : ''}` },
+                            headers: { 
+                                'Authorization': `Bearer ${data.session ? data.session.access_token : ''}`,
+                                'apikey': SUPABASE_ANON_KEY 
+                            },
                             body: formData
                         });
                         const result = await response.json();
@@ -202,8 +200,8 @@
         async function verificarSesion() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) return;
-
             currentUser = session.user;
+
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
 
@@ -241,7 +239,10 @@
 
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${session.access_token}` },
+                    headers: { 
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'apikey': SUPABASE_ANON_KEY 
+                    },
                     body: formData
                 });
 
@@ -252,7 +253,6 @@
 
                 const nuevaUrl = result.urls[0];
 
-                // Si tenía foto anterior en R2 y no es la de Unsplash, podemos limpiarla opcionalmente
                 if (currentAgente.foto_perfil_url && currentAgente.foto_perfil_url.includes(' R2 endpoint ')) {
                     await borrarLoteDeR2([currentAgente.foto_perfil_url]);
                 }
@@ -342,6 +342,7 @@
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${session.access_token}`,
+                        'apikey': SUPABASE_ANON_KEY,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ urls })
@@ -399,7 +400,10 @@
 
                         const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
                             method: 'POST',
-                            headers: { 'Authorization': `Bearer ${session.access_token}` },
+                            headers: { 
+                                'Authorization': `Bearer ${session.access_token}`,
+                                'apikey': SUPABASE_ANON_KEY 
+                            },
                             body: formData
                         });
 
