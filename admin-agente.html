@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Librería de compresión de imágenes -->
+    <!-- Librería de compresión de imágenes de alta calidad -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.js"></script>
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
@@ -75,13 +75,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tipo</label>
-                        <select id="inm-tipo" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
-                            <option value="apartamento">Apartamento</option>
-                            <option value="casa">Casa / Townhouse</option>
-                            <option value="local">Local Comercial</option>
-                            <option value="terreno">Terreno</option>
-                        </select>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tipo de Inmueble (Texto Libre)</label>
+                        <input type="text" id="inm-tipo" required placeholder="Ej: Apartamento, Quinta, Townhouse, Local" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ciudad / Zona</label>
@@ -92,7 +87,7 @@
                         <input type="number" id="inm-precio" required placeholder="50000" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fotos del Inmueble (Hasta 30 fotos con compresión automática)</label>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fotos del Inmueble (Hasta 30 fotos con compresión inteligente)</label>
                         <input type="file" id="inm-fotos" accept="image/*" multiple class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-900 file:text-white hover:file:bg-amber-600">
                     </div>
                     <div class="md:col-span-2">
@@ -242,8 +237,8 @@
                         <p class="text-xs text-gray-500 line-clamp-1 mt-1">${inm.detalles}</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <button onclick='copiarFicha(${JSON.stringify(inm.detalles)})' class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-amber-600 transition">Copiar Ficha</button>
-                        <button onclick='descargarLoteFotos(${JSON.stringify(inm.fotos_urls)})' class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-emerald-700 transition">Descargar Fotos</button>
+                        <button onclick='copiarFichaYNavegar(${JSON.stringify(inm.detalles)})' class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-amber-600 transition">Copiar Ficha</button>
+                        <button onclick='descargarLoteFotos(${JSON.stringify(inm.fotos_urls)}, ${JSON.stringify(inm.detalles)})' class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-emerald-700 transition">Descargar Fotos</button>
                         <button onclick='editarInmueble("${inm.id}", ${JSON.stringify(inm)})' class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-medium hover:bg-gray-300 transition">Editar</button>
                         <button onclick='eliminarInmueble("${inm.id}")' class="bg-red-100 text-red-600 px-3 py-2 rounded-lg text-xs font-medium hover:bg-red-200 transition">Eliminar</button>
                     </div>
@@ -251,13 +246,15 @@
             `).join('');
         }
 
-        function copiarFicha(detalles) {
+        function copiarFichaYNavegar(detalles) {
             navigator.clipboard.writeText(detalles);
-            alert("¡Ficha descriptiva copiada al portapapeles!");
+            alert("¡Ficha descriptiva copiada al portapapeles con éxito!");
         }
 
-        async function descargarLoteFotos(urls) {
+        async function descargarLoteFotos(urls, detalles) {
             if (!urls || urls.length === 0) { alert("Este inmueble no tiene fotos."); return; }
+            navigator.clipboard.writeText(detalles);
+            alert(`Copiando ficha al portapapeles y abriendo ${urls.length} fotos en alta calidad para descarga.`);
             urls.forEach(url => window.open(url, '_blank'));
         }
 
@@ -282,6 +279,7 @@
 
         function resetFormulario() {
             document.getElementById('edit-inmueble-id').value = "";
+            document.getElementById('inm-tipo').value = "";
             document.getElementById('inm-ciudad').value = "";
             document.getElementById('inm-precio').value = "";
             document.getElementById('inm-video').value = "";
@@ -289,7 +287,8 @@
             document.getElementById('inm-fotos').value = "";
         }
 
-        async function borrarArchivoDeR2(url) {
+        async function borrarLoteDeR2(urls) {
+            if (!urls || urls.length === 0) return;
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 await fetch(`${SUPABASE_URL}/functions/v1/delete-r2`, {
@@ -298,10 +297,10 @@
                         'Authorization': `Bearer ${session.access_token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ url })
+                    body: JSON.stringify({ urls })
                 });
             } catch (e) {
-                console.log("No se pudo eliminar el archivo físico de R2:", e);
+                console.log("Error al limpiar archivos en R2:", e);
             }
         }
 
@@ -309,7 +308,7 @@
             event.preventDefault();
             const id = document.getElementById('edit-inmueble-id').value;
             const operacion = document.getElementById('inm-operacion').value;
-            const tipo = document.getElementById('inm-tipo').value;
+            const tipo = document.getElementById('inm-tipo').value.trim();
             const ciudad = document.getElementById('inm-ciudad').value;
             const precio = parseFloat(document.getElementById('inm-precio').value);
             const video_url = document.getElementById('inm-video').value;
@@ -339,36 +338,33 @@
                     }
 
                     const { data: { session } } = await supabaseClient.auth.getSession();
-                    let nuevasFotos = [];
+                    const formData = new FormData();
                     
                     for (let i = 0; i < fileInput.files.length; i++) {
-                        btnGuardar.innerText = `Comprimiendo y subiendo foto ${i + 1} de ${fileInput.files.length}...`;
+                        btnGuardar.innerText = `Comprimiendo foto ${i + 1} de ${fileInput.files.length}...`;
                         let file = fileInput.files[i];
 
+                        // Compresión optimizada manteniendo resolución y nitidez perfecta para portales
                         const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true };
                         try { file = await imageCompression(file, options); } catch (e) {}
 
-                        const formData = new FormData();
-                        formData.append('file', file);
-
-                        const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${session.access_token}` },
-                            body: formData
-                        });
-
-                        const result = await response.json();
-                        if (!response.ok) throw new Error(result.error || 'Error al subir imagen');
-                        nuevasFotos.push(result.url);
+                        formData.append('files', file);
                     }
 
-                    // Limpieza automática de archivos huérfanos antiguos en R2 si se reemplazaron
+                    btnGuardar.innerText = "Subiendo lote a Cloudflare R2...";
+                    const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${session.access_token}` },
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error || 'Error al subir las imágenes');
+
                     if (id && fotosAntiguas.length > 0) {
-                        for (let urlVieja of fotosAntiguas) {
-                            await borrarArchivoDeR2(urlVieja);
-                        }
+                        await borrarLoteDeR2(fotosAntiguas);
                     }
-                    fotos_urls = nuevasFotos;
+                    fotos_urls = result.urls;
                 }
 
                 if (fotos_urls.length === 0) {
@@ -401,12 +397,9 @@
         async function eliminarInmueble(id) {
             if (!confirm("¿Estás seguro de eliminar este inmueble? Se borrarán sus datos y se limpiarán los archivos de la nube.")) return;
             
-            // Purga física en Cloudflare R2 antes de borrar el registro en la base de datos
             const { data: inmueble } = await supabaseClient.from('inmuebles').select('fotos_urls').eq('id', id).single();
             if (inmueble && inmueble.fotos_urls) {
-                for (let url of inmueble.fotos_urls) {
-                    await borrarArchivoDeR2(url);
-                }
+                await borrarLoteDeR2(inmueble.fotos_urls);
             }
 
             const { error } = await supabaseClient.from('inmuebles').delete().eq('id', id);
