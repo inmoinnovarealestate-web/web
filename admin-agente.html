@@ -160,9 +160,9 @@
                     try { file = await imageCompression(file, options); } catch (e) {}
 
                     try {
-                        const reqFirma = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                        const reqFirma = await fetch('https://inmoinnova-api.vercel.app/api/upload', {
                             method: 'POST',
-                            headers: { 'Authorization': `Bearer ${data.session ? data.session.access_token : ''}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
                         });
                         const resFirma = await reqFirma.json();
@@ -228,11 +228,9 @@
                 const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
                 try { file = await imageCompression(file, options); } catch (e) {}
 
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                
-                const reqFirma = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                const reqFirma = await fetch('https://inmoinnova-api.vercel.app/api/upload', {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
                 });
 
@@ -329,6 +327,8 @@
         async function borrarLoteDeR2(urls) {
             if (!urls || urls.length === 0) return;
             try {
+                // Aquí usamos Supabase para ejecutar la lógica de borrado, ya que esta no maneja archivos grandes
+                // y es más segura para no exponer las claves maestras de S3.
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 await fetch(`${SUPABASE_URL}/functions/v1/delete-r2`, {
                     method: 'POST',
@@ -377,7 +377,6 @@
                         return;
                     }
 
-                    const { data: { session } } = await supabaseClient.auth.getSession();
                     let nuevasFotos = [];
                     
                     for (let i = 0; i < fileInput.files.length; i++) {
@@ -387,10 +386,10 @@
                         const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true };
                         try { file = await imageCompression(file, options); } catch (e) {}
 
-                        // 1. Pedir Pase VIP a la Edge Function
-                        const reqFirma = await fetch(`${SUPABASE_URL}/functions/v1/upload-r2`, {
+                        // 1. Pedir Pase VIP a la API de Vercel
+                        const reqFirma = await fetch('https://inmoinnova-api.vercel.app/api/upload', {
                             method: 'POST',
-                            headers: { 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
                         });
                         const resFirma = await reqFirma.json();
