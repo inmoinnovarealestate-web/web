@@ -330,23 +330,26 @@
         }
 
         // =========================================================================
-        // NUEVO SISTEMA DE DESCARGA DIRECTA SECUENCIAL ROBUSTA (A PRUEBA DE BLOQUEOS)
+        // MOTOR DE DESCARGA SECUENCIAL ROBUSTA (AUTOMÁTICA, SIN BLOQUEOS Y REPETIBLE)
         // =========================================================================
         async function descargarLoteFotos(event, urls, detalles) {
             if (!urls || urls.length === 0) { alert("Este inmueble no tiene fotos."); return; }
             
-            // 1. Copiamos la ficha al portapapeles instantáneamente
+            // 1. Copiamos la ficha inmediatamente al portapapeles
             navigator.clipboard.writeText(detalles);
             
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
-            btn.innerHTML = "⏳ Preparando...";
+            btn.innerHTML = "⏳ Iniciando...";
             btn.disabled = true;
 
             try {
-                // 2. Descarga secuencial con retardo controlado para forzar la bajada directa a la galería/descargas
+                // Identificador único de tiempo para evitar que el navegador bloquee descargas repetidas del mismo inmueble
+                const timestampUnico = Date.now();
+
+                // 2. Bucle secuencial con retardo que fuerza la descarga individual limpia directo a la galería/descargas
                 for (let i = 0; i < urls.length; i++) {
-                    btn.innerHTML = `⏳ Descargando ${i + 1} de ${urls.length}...`;
+                    btn.innerHTML = `⏳ Foto ${i + 1} de ${urls.length}...`;
                     
                     const response = await fetch(urls[i]);
                     const blob = await response.blob();
@@ -356,23 +359,23 @@
                     a.style.display = 'none';
                     a.href = urlLocal;
                     
-                    // Nombre optimizado para que el móvil los agrupe y organice
-                    a.download = `Inmoinnova_Inmueble_Foto_${i + 1}.jpg`;
+                    // Nombre dinámico con timestamp para que el navegador NUNCA lo detecte como duplicado si lo vuelve a descargar
+                    a.download = `Inmoinnova_${timestampUnico}_Foto_${i + 1}.jpg`;
+                    
                     document.body.appendChild(a);
                     a.click();
                     
-                    // Pausa de 600ms entre foto y foto para evitar que el navegador móvil bloquee la cola
-                    await new Promise(r => setTimeout(r, 600));
+                    // Pausa de 700ms obligatoria entre cada foto: evita el bloqueo de seguridad móvil y descarga una por una fluidamente
+                    await new Promise(r => setTimeout(r, 700));
                     
                     window.URL.revokeObjectURL(urlLocal);
                     document.body.removeChild(a);
                 }
                 
-                alert("¡Ficha copiada al portapapeles y todas las fotos descargadas a tu dispositivo con éxito!");
+                alert("¡Ficha copiada y todas las fotos descargadas automáticamente a tu dispositivo!");
             } catch (error) {
-                console.error("Error en la descarga directa:", error);
-                // Plan B por seguridad extrema: Si algún navegador restringe el fetch, abre las fotos limpiamente
-                alert("El navegador bloqueó la descarga en bloque. Abriendo las imágenes de respaldo...");
+                console.error("Error en la descarga secuencial:", error);
+                alert("Hubo un inconveniente con la descarga automática. Abriendo respaldo seguro...");
                 urls.forEach(url => window.open(url, '_blank'));
             } finally {
                 btn.innerHTML = originalText;
