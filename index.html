@@ -6,17 +6,17 @@
     <title>Inmoinnova Real Estate | Bienes Raíces con Respaldo Legal en Venezuela</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Leaflet.js CSS para los mapas interactivos -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Leaflet.js CSS para mapas -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased relative min-h-screen flex flex-col justify-between">
+    
     <!-- HEADER / NAVBAR -->
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <a href="#" class="flex items-center gap-2.5">
+            <a href="index.html" class="flex items-center gap-2.5">
                 <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-white font-bold text-xl tracking-wider">II</div>
                 <div class="flex flex-col">
                     <span class="font-bold text-lg tracking-tight leading-none text-slate-900">INMOINNOVA</span>
@@ -24,13 +24,16 @@
                 </div>
             </a>
             <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-                <a href="#propiedades" class="text-slate-900 hover:text-amber-600 transition">Propiedades</a>
-                <a href="#asesores" class="hover:text-amber-600 transition">Nuestros Asesores</a>
+                <a href="#propiedades" onclick="mostrarTodos()" class="text-slate-900 hover:text-amber-600 transition">Catálogo</a>
+                <a href="#propiedades" onclick="filtrarFavoritos()" class="text-rose-600 hover:text-rose-700 transition font-semibold flex items-center gap-1">
+                    <span id="nav-fav-counter">❤️ Mis Favoritos (0)</span>
+                </a>
+                <a href="#asesores" class="hover:text-amber-600 transition">Asesores</a>
                 <a href="#respaldo-legal" class="hover:text-amber-600 transition">Respaldo Legal</a>
-                <a href="#diaspora" class="hover:text-amber-600 transition">Desde el Exterior</a>
                 <a href="https://wa.me/584121634256?text=Quiero%20ser%20agente%20inmobiliario" target="_blank" class="hover:text-amber-600 transition font-semibold text-amber-600">Acceso Asesores</a>
             </nav>
             <div class="flex items-center gap-4">
+                <button onclick="filtrarFavoritos()" class="md:hidden text-rose-600 text-lg font-bold"><span id="movil-fav-counter">❤️(0)</span></button>
                 <button onclick="toggleListaMovil()" class="md:hidden bg-slate-100 p-2 rounded-lg text-sm font-semibold">Catálogo</button>
                 <a href="https://wa.me/584121634256?text=Hola%20Inmoinnova%20requiero%20mas%20información" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow-sm">
                     WhatsApp
@@ -38,120 +41,100 @@
             </div>
         </div>
     </header>
+
     <!-- LISTA DESPLEGABLE MÓVIL DE INMUEBLES -->
     <div id="menu-movil-inmuebles" class="hidden bg-white border-b border-gray-200 p-4 space-y-2 md:hidden">
         <h4 class="font-bold text-sm text-slate-900">Navegación Rápida</h4>
         <div id="lista-desplegable-items" class="max-h-60 overflow-y-auto space-y-1 text-xs"></div>
     </div>
-    <!-- HERO SECTION & BUSCADOR INMEDIATO -->
+
+    <!-- HERO SECTION & BUSCADOR INTELIGENTE AVANZADO -->
     <section class="relative bg-slate-900 text-white py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
         <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]"></div>
         <div class="relative max-w-7xl mx-auto text-center">
             <span class="inline-block py-1 px-3 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold tracking-wider uppercase mb-4">
-                Inmobiliaria con Respaldo Jurídico en Venezuela
+                Inmobiliaria con Respaldo Jurídico
             </span>
             <h1 class="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 max-w-4xl mx-auto leading-tight">
-                Compra, vende y alquila con nuestro equipo de realtors <span class="text-amber-400">altamente calificados</span>.
+                Compra, vende y alquila con <span class="text-amber-400">seguridad absoluta</span>.
             </h1>
             <p class="text-lg text-gray-300 max-w-2xl mx-auto mb-10 font-light">
-                Asesoría legal senior y gestión inmobiliaria profesional en Valencia, Carabobo y todo el territorio nacional.
+                Asesoría legal senior y gestión inmobiliaria profesional en todo el territorio nacional.
             </p>
-            <!-- BUSCADOR INTELIGENTE -->
-            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-2xl max-w-5xl mx-auto text-gray-900">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+            
+            <!-- BUSCADOR CON FILTRO DE PRECIOS -->
+            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-2xl max-w-5xl mx-auto text-gray-900 mt-10 relative z-10">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-left items-end">
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Operación</label>
-                        <select id="filtro-operacion" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-600">
-                            <option value="todos">Todas las operaciones</option>
+                        <select id="filtro-operacion" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-600">
+                            <option value="todos">Todas</option>
                             <option value="venta">Venta</option>
                             <option value="alquiler">Alquiler</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ubicación / Ciudad / Tipo</label>
-                        <input type="text" id="filtro-busqueda" placeholder="Ej: El Bosque, Apartamento, Valencia..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-600">
+                    <div class="lg:col-span-2">
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ubicación o Tipo</label>
+                        <input type="text" id="filtro-busqueda" placeholder="Ej: Tucacas, Townhouse..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-600">
                     </div>
-                    <div class="flex items-end">
-                        <button onclick="paginaActual = 1; cargarCatalogoPublico()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition shadow-md flex items-center justify-center gap-2">
-                            Buscar Inmueble
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Precio Máx ($)</label>
+                        <input type="number" id="filtro-precio-max" placeholder="Ilimitado" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-600">
+                    </div>
+                    <div>
+                        <button onclick="paginaActual = 1; cargarCatalogoPublico()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition shadow-md">
+                            Buscar
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <!-- SECCIÓN PRINCIPAL: INMUEBLES EN TIEMPO REAL CON PAGINACIÓN (12 en 12) -->
-    <section id="propiedades" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+
+    <!-- CATÁLOGO DE PROPIEDADES -->
+    <section id="propiedades" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-[500px]">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
             <div>
-                <span class="text-amber-600 font-semibold text-sm uppercase tracking-wider">Portafolio Activo</span>
-                <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Propiedades Disponibles</h2>
+                <span class="text-amber-600 font-semibold text-sm uppercase tracking-wider" id="titulo-seccion-catalogo">Portafolio Activo</span>
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1" id="subtitulo-seccion-catalogo">Propiedades Disponibles</h2>
             </div>
             <p id="contador-resultados" class="text-sm font-semibold text-slate-900 bg-amber-100 px-4 py-2 rounded-lg mt-4 md:mt-0 shadow-sm border border-amber-200">
                 Calculando inventario total...
             </p>
         </div>
         
-        <!-- GRID DE PROPIEDADES DINÁMICO -->
         <div id="grid-inmuebles-publico" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <p class="text-gray-500 col-span-3 text-center py-10">Cargando propiedades...</p>
         </div>
-        <!-- PAGINACIÓN -->
         <div id="paginacion-container" class="flex justify-center items-center gap-4 mt-12 hidden">
-            <button id="btn-anterior" onclick="cambiarPagina(-1)" class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition shadow-xs">Anterior</button>
+            <button id="btn-anterior" onclick="cambiarPagina(-1)" class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-50">Anterior</button>
             <span id="page-indicator" class="text-sm font-semibold text-gray-700">Página 1</span>
-            <button id="btn-siguiente" onclick="cambiarPagina(1)" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-600 transition shadow-xs">Siguiente</button>
+            <button id="btn-siguiente" onclick="cambiarPagina(1)" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-600">Siguiente</button>
         </div>
     </section>
+
+    <!-- SECCIÓN DE CAPTACIÓN: ENCARGA TU INMUEBLE -->
+    <section class="py-12 bg-amber-600 text-white border-y border-amber-700">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 text-center">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-3">¿No encontraste lo que buscas en el catálogo?</h2>
+            <p class="text-amber-100 mb-6 max-w-2xl mx-auto">Déjanos saber tu presupuesto y las características de tu propiedad ideal. Nuestro equipo de captación lo ubicará y negociará por ti con respaldo legal garantizado.</p>
+            <a href="https://wa.me/584121634256?text=Hola%20Inmoinnova,%20no%20encontré%20lo%20que%20buscaba.%20Quiero%20encargar%20un%20inmueble%20con%20estas%20características:" target="_blank" class="inline-block bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition transform hover:scale-105">
+                Encargar Búsqueda Personalizada 🔎
+            </a>
+        </div>
+    </section>
+
     <!-- SECCIÓN: NUESTROS ASESORES (REALTORS) -->
     <section id="asesores" class="py-16 bg-white border-t border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-12">
                 <span class="text-amber-600 font-semibold text-sm uppercase tracking-wider">Equipo Profesional</span>
                 <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Nuestros Realtors</h2>
-                <p class="text-gray-600 mt-2">Conecta directamente con nuestros asesores inmobiliarios autorizados por Inmoinnova.</p>
             </div>
-            <div id="grid-agentes-publico" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <p class="text-gray-500 col-span-4 text-center py-6">Cargando equipo de asesores...</p>
-            </div>
+            <div id="grid-agentes-publico" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
         </div>
     </section>
-    <!-- MODAL DE FICHA COMPLETA Y GALERÍA BAJO DEMANDA -->
-    <div id="modal-detalle" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative shadow-2xl">
-            <button onclick="cerrarModalDetalle()" class="absolute top-6 right-6 bg-gray-100 hover:bg-gray-200 text-gray-700 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition">✕</button>
-            <div id="modal-contenido"></div>
-        </div>
-    </div>
-    <!-- ASISTENTE VIRTUAL FLOTANTE (FIJO AL DESPLAZARSE) -->
-    <div id="chat-widget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-        <div id="chat-window" class="hidden bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col mb-4 transition-all">
-            <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <h3 class="font-bold text-sm">Asistente Virtual Inmoinnova</h3>
-                </div>
-                <button onclick="toggleChat()" class="text-gray-400 hover:text-white font-bold text-base">✕</button>
-            </div>
-            <div id="chat-messages" class="p-4 h-72 overflow-y-auto space-y-3 bg-gray-50 text-xs">
-                <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-xs max-w-[85%]">
-                    ¡Hola! Soy tu asistente inmobiliario virtual. Escríbeme qué tipo de propiedad o zona buscas y te mostraré las opciones disponibles en tiempo real.
-                </div>
-            </div>
-            <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
-                <input type="text" id="chat-input" placeholder="Ej: Townhouse en San Diego..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-600" onkeypress="if(event.key === 'Enter') enviarMensajeChat()">
-                <button onclick="enviarMensajeChat()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">Enviar</button>
-            </div>
-        </div>
-        <!-- BOTÓN FLOTANTE ESTILO PÍLDORA -->
-        <button onclick="toggleChat()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-5 rounded-full shadow-2xl flex items-center gap-2.5 transition transform hover:scale-105 border-2 border-white">
-            <span class="text-lg">💬</span>
-            <div class="text-left leading-tight">
-                <span class="block text-[10px] uppercase tracking-wider text-amber-200 font-bold">¡Púlsame!</span>
-                <span class="block text-xs">¿Qué propiedad buscas?</span>
-            </div>
-        </button>
-    </div>
+
     <!-- PILARES: RESPALDO LEGAL -->
     <section id="respaldo-legal" class="py-20 bg-gray-50 border-y border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -164,7 +147,7 @@
                 <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-xs">
                     <div class="w-12 h-12 bg-amber-600/10 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">I</div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Respaldo Jurídico Senior</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Acompañamiento directo de nuestro Broker y Abogado Martin J. Nava S, en cada documento, desde la redacción de la oferta hasta la firma definitiva en el Registro.</p>
+                    <p class="text-gray-600 text-sm leading-relaxed">Acompañamiento directo de nuestro Broker y Abogado Martin J. Nava S, en cada documento, desde la redacción de la oferta hasta la firma definitiva.</p>
                 </div>
                 <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-xs">
                     <div class="w-12 h-12 bg-amber-600/10 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">II</div>
@@ -174,25 +157,44 @@
                 <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-xs">
                     <div class="w-12 h-12 bg-amber-600/10 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">III</div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Respuesta Inmediata</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Atención ágil y directa por WhatsApp y canales digitales, así estés en Venezuela o en el exterior contaras con nuestro respaldo en la compra, venta y alquiler de inmuebles.</p>
+                    <p class="text-gray-600 text-sm leading-relaxed">Atención ágil y directa por WhatsApp, así estés en Venezuela o en el exterior contaras con nuestro respaldo.</p>
                 </div>
             </div>
         </div>
     </section>
-    
-    <!-- NUEVA SECCIÓN: SERVICIOS INTEGRALES (LEGAL, CONTABLE, CONDOMINIOS) -->
+
+    <!-- NUEVA SECCIÓN: SERVICIOS INTEGRALES CON ARTE VANGUARDISTA EN TAILWIND -->
     <section id="servicios-integrales" class="py-20 bg-white border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div class="order-2 lg:order-1 flex justify-center">
-                    <!-- Espacio reservado para la imagen solicitada -->
-                    <div class="bg-slate-100 rounded-3xl border border-gray-200 overflow-hidden w-full h-[400px] flex items-center justify-center relative shadow-inner">
-                        <div class="absolute inset-0 bg-slate-900/5 z-10"></div>
-                        <p class="text-slate-400 font-medium text-center px-6 z-0">
-                            [Espacio optimizado para la imagen de Servicios Integrales]
-                        </p>
+                <!-- Composición visual moderna en lugar de la imagen estática -->
+                <div class="order-2 lg:order-1 flex justify-center w-full">
+                    <div class="bg-slate-900 rounded-3xl overflow-hidden w-full h-full min-h-[400px] flex flex-col items-center justify-center relative shadow-2xl p-8 border border-slate-800">
+                        <!-- Luces de fondo (Glow effects) -->
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                        <div class="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -ml-20 -mb-20"></div>
+                        
+                        <!-- Símbolos Flotantes (Glassmorphism) -->
+                        <div class="z-10 text-center space-y-8">
+                            <div class="flex justify-center items-center gap-4 sm:gap-6">
+                                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-3xl sm:text-4xl border border-white/20 shadow-lg transform -rotate-6">⚖️</div>
+                                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500 flex items-center justify-center text-4xl sm:text-5xl border border-amber-400 shadow-xl z-20 transform scale-110">🏛️</div>
+                                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-3xl sm:text-4xl border border-white/20 shadow-lg transform rotate-6">📊</div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-white text-2xl sm:text-3xl font-bold tracking-widest uppercase">Blindaje Patrimonial</h3>
+                                <div class="flex items-center justify-center gap-3 mt-3">
+                                    <span class="w-8 h-[1px] bg-amber-500"></span>
+                                    <p class="text-amber-400 text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase">Legal • Contable • Condominios</p>
+                                    <span class="w-8 h-[1px] bg-amber-500"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Textos descriptivos -->
                 <div class="order-1 lg:order-2">
                     <span class="text-amber-600 font-semibold text-sm uppercase tracking-wider">Agencia Integral</span>
                     <h2 class="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 mt-2 mb-6">Sólida trayectoria y servicios más allá del Real Estate</h2>
@@ -248,10 +250,6 @@
                             <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mt-0.5">3</span>
                             <div><strong class="text-white">Auditoría legal previa:</strong> Revisamos titularidad, solvencias y documentos antes de cualquier desembolso.</div>
                         </li>
-                        <li class="flex items-start gap-3">
-                            <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mt-0.5">4</span>
-                            <div><strong class="text-white">Firma segura:</strong> Acompañamiento legal hasta el registro, incluyendo gestión mediante poderes.</div>
-                        </li>
                     </ul>
                 </div>
                 <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
@@ -264,24 +262,54 @@
             </div>
         </div>
     </section>
-    <!-- FOOTER -->
-    <footer class="bg-slate-950 text-gray-400 py-12 border-t border-slate-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-amber-600 flex items-center justify-center text-white font-bold text-sm">II</div>
-                <span class="font-bold text-white tracking-tight">INMOINNOVA REAL ESTATE C.A.</span>
+
+    <!-- MODAL DE FICHA COMPLETA -->
+    <div id="modal-detalle" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative shadow-2xl">
+            <button onclick="cerrarModalDetalle()" class="absolute top-6 right-6 bg-gray-100 hover:bg-gray-200 text-gray-700 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition z-10">✕</button>
+            <div id="modal-contenido"></div>
+        </div>
+    </div>
+
+    <!-- CHAT FLOTANTE -->
+    <div id="chat-widget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div id="chat-window" class="hidden bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col mb-4 transition-all">
+            <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div><h3 class="font-bold text-sm">Asistente Virtual</h3></div>
+                <button onclick="toggleChat()" class="text-gray-400 hover:text-white font-bold text-base">✕</button>
             </div>
-            <p class="text-xs text-center md:text-left">
-                © 2026 Inmoinnova Real Estate C.A. Valencia, Carabobo, Venezuela. Todos los derechos reservados.
-            </p>
-            <div class="flex items-center gap-4 text-sm">
-                <a href="https://wa.me/584121634256?text=Quiero%20ser%20agente%20inmobiliario" target="_blank" class="hover:text-white transition">Acceso Asesores</a>
+            <div id="chat-messages" class="p-4 h-72 overflow-y-auto space-y-3 bg-gray-50 text-xs">
+                <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-xs max-w-[85%]">¡Hola! Escríbeme qué buscas y te mostraré las opciones en tiempo real.</div>
+            </div>
+            <div class="p-3 bg-white border-t flex gap-2">
+                <input type="text" id="chat-input" placeholder="Ej: Apartamento en Tucacas" class="flex-1 bg-gray-50 border rounded-xl px-3 py-2 text-xs" onkeypress="if(event.key === 'Enter') enviarMensajeChat()">
+                <button onclick="enviarMensajeChat()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-semibold">Enviar</button>
             </div>
         </div>
+        <button onclick="toggleChat()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-5 rounded-full shadow-2xl flex items-center gap-2.5 transform hover:scale-105 border-2 border-white">
+            <span class="text-lg">💬</span>
+            <div class="text-left leading-tight">
+                <span class="block text-[10px] uppercase tracking-wider text-amber-200 font-bold">¡Púlsame!</span>
+                <span class="block text-xs">¿Qué buscas?</span>
+            </div>
+        </button>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-gray-400 py-12 border-t border-slate-900">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-amber-600 flex items-center justify-center text-white font-bold text-sm">II</div>
+                <span class="font-bold text-white tracking-tight">INMOINNOVA</span>
+            </div>
+            <p class="text-xs text-center md:text-left">© 2026 Inmoinnova Real Estate C.A. Todos los derechos reservados.</p>
+            <a href="https://wa.me/584121634256?text=Quiero%20ser%20agente%20inmobiliario" target="_blank" class="text-sm hover:text-white transition">Acceso Asesores</a>
+        </div>
     </footer>
-    <!-- SUPABASE & LEAFLET.JS SCRIPTS -->
+
+    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     
     <script>
         const SUPABASE_URL = 'https://kyxwiulxaazhyeqghjhh.supabase.co';
@@ -291,41 +319,94 @@
         let paginaActual = 1;
         const porPagina = 12;
         let cacheInmuebles = [];
-        let totalInventarioBaseDeDatos = 0; // Variable para almacenar el total real
+        let totalInventarioBaseDeDatos = 0;
+        let modoFavoritos = false;
 
-        function toggleListaMovil() {
-            const menu = document.getElementById('menu-movil-inmuebles');
-            menu.classList.toggle('hidden');
+        // MAPAS ULTRAPRECISOS (CEREBRO GEOGRÁFICO)
+        const coordsRegionales = {
+            'tucacas': [10.7989, -68.3182],
+            'chichiriviche': [10.9296, -68.2750],
+            'falcon': [11.1500, -69.8333],
+            'valencia': [10.1620, -68.0077],
+            'san diego': [10.2547, -67.9442],
+            'naguanagua': [10.2546, -68.0125],
+            'guacara': [10.2294, -67.8789],
+            'maracay': [10.2469, -67.5958],
+            'caracas': [10.4806, -66.9036]
+        };
+
+        function obtenerCoordenadas(ciudadStr) {
+            const ciu = ciudadStr.toLowerCase();
+            for (const key in coordsRegionales) {
+                if (ciu.includes(key)) return coordsRegionales[key];
+            }
+            return [10.1808, -68.0056]; // Fallback genérico centro Valencia
         }
 
+        // MENU MOVIL
+        function toggleListaMovil() {
+            document.getElementById('menu-movil-inmuebles').classList.toggle('hidden');
+        }
+
+        // SISTEMA DE FAVORITOS
+        function obtenerFavs() { return JSON.parse(localStorage.getItem('inmoFavs')) || []; }
+        function guardarFavs(favs) { localStorage.setItem('inmoFavs', JSON.stringify(favs)); actualizarContadorFavs(); }
+        
+        function toggleFavorito(id, event) {
+            if(event) event.stopPropagation();
+            let favs = obtenerFavs();
+            if (favs.includes(id)) { favs = favs.filter(f => f !== id); } 
+            else { favs.push(id); }
+            guardarFavs(favs);
+            cargarCatalogoPublico(); 
+        }
+
+        function actualizarContadorFavs() {
+            const favs = obtenerFavs();
+            document.getElementById('nav-fav-counter').innerText = `❤️ Mis Favoritos (${favs.length})`;
+            document.getElementById('movil-fav-counter').innerText = `❤️(${favs.length})`;
+        }
+
+        function filtrarFavoritos() {
+            modoFavoritos = true;
+            document.getElementById('titulo-seccion-catalogo').innerText = "Tu Selección";
+            document.getElementById('subtitulo-seccion-catalogo').innerText = "Mis Inmuebles Favoritos";
+            paginaActual = 1;
+            cargarCatalogoPublico();
+        }
+
+        function mostrarTodos() {
+            modoFavoritos = false;
+            document.getElementById('titulo-seccion-catalogo').innerText = "Portafolio Activo";
+            document.getElementById('subtitulo-seccion-catalogo').innerText = "Propiedades Disponibles";
+            paginaActual = 1;
+            cargarCatalogoPublico();
+        }
+
+        // CARGA PRINCIPAL DEL CATÁLOGO
         async function cargarCatalogoPublico() {
             const op = document.getElementById('filtro-operacion').value;
             const textoBusqueda = document.getElementById('filtro-busqueda').value.toLowerCase().trim();
+            const precioMax = parseFloat(document.getElementById('filtro-precio-max').value) || null;
             
-            // Traemos todos los inmuebles con sus agentes
             let query = supabaseClient.from('inmuebles').select('*, agentes(nombre_completo, telefono, codigo_asesor, foto_perfil_url)');
-            
             if (op !== 'todos') query = query.eq('operacion', op);
-            const { data: inmuebles, error } = await query;
-            const grid = document.getElementById('grid-inmuebles-publico');
             
-            if (error || !inmuebles || inmuebles.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-3 text-center py-10">No se encontraron propiedades disponibles.</p>`;
-                document.getElementById('paginacion-container').classList.add('hidden');
-                return;
-            }
+            const { data: inmuebles, error } = await query;
+            if (error || !inmuebles) return;
 
-            // Almacenamos el total real de la consulta global para mostrarlo siempre
-            if (op === 'todos' && textoBusqueda === '') {
+            if (op === 'todos' && textoBusqueda === '' && !precioMax) {
                 totalInventarioBaseDeDatos = inmuebles.length;
             } else if (totalInventarioBaseDeDatos === 0) {
-                // Si la primera búsqueda es con filtro, hace una llamada rápida solo para obtener el total global real
                 const { count } = await supabaseClient.from('inmuebles').select('*', { count: 'exact', head: true });
                 totalInventarioBaseDeDatos = count || inmuebles.length;
             }
 
-            // Filtramos la búsqueda
+            const favs = obtenerFavs();
+
             cacheInmuebles = inmuebles.filter(inm => {
+                if (modoFavoritos && !favs.includes(inm.id.toString())) return false;
+                if (precioMax && inm.precio > precioMax) return false;
                 if (!textoBusqueda) return true;
                 const matchCiudad = inm.ciudad && inm.ciudad.toLowerCase().includes(textoBusqueda);
                 const matchTipo = inm.tipo && inm.tipo.toLowerCase().includes(textoBusqueda);
@@ -339,10 +420,7 @@
 
         function poblarListaMovil() {
             const lista = document.getElementById('lista-desplegable-items');
-            if (!cacheInmuebles.length) {
-                lista.innerHTML = `<p class="text-gray-400">Sin inmuebles</p>`;
-                return;
-            }
+            if (!cacheInmuebles.length) { lista.innerHTML = `<p class="text-gray-400">Sin inmuebles</p>`; return; }
             lista.innerHTML = cacheInmuebles.map(inm => `
                 <a href="#" onclick="abrirDetalle('${inm.id}'); toggleListaMovil(); return false;" class="block p-2 hover:bg-gray-50 rounded border-b border-gray-100">
                     <span class="font-bold uppercase text-amber-600">${inm.tipo}</span> en ${inm.ciudad} - <span class="font-semibold">$${inm.precio}</span>
@@ -351,6 +429,7 @@
         }
 
         function actualizarPaginacionYRender() {
+            actualizarContadorFavs();
             const total = cacheInmuebles.length;
             const totalPaginas = Math.ceil(total / porPagina) || 1;
             
@@ -358,43 +437,39 @@
             if (paginaActual < 1) paginaActual = 1;
             
             const inicio = (paginaActual - 1) * porPagina;
-            const fin = inicio + porPagina;
-            const inmueblesPagina = cacheInmuebles.slice(inicio, fin);
+            const inmueblesPagina = cacheInmuebles.slice(inicio, inicio + porPagina);
             
-            // Actualización del contador mostrando el total REAL de la base de datos
-            document.getElementById('contador-resultados').innerHTML = `Mostrando <strong>${inmueblesPagina.length}</strong> propiedades de un inventario activo de <strong>${totalInventarioBaseDeDatos}</strong>`;
-            
-            const pagContainer = document.getElementById('paginacion-container');
-            if (total > porPagina) {
-                pagContainer.classList.remove('hidden');
-                document.getElementById('page-indicator').innerText = `Página ${paginaActual} de ${totalPaginas}`;
-                document.getElementById('btn-anterior').disabled = paginaActual === 1;
-                document.getElementById('btn-siguiente').disabled = paginaActual === totalPaginas;
+            if (modoFavoritos) {
+                document.getElementById('contador-resultados').innerHTML = `Tienes <strong>${total}</strong> propiedades guardadas`;
             } else {
-                pagContainer.classList.add('hidden');
+                document.getElementById('contador-resultados').innerHTML = `Mostrando <strong>${inmueblesPagina.length}</strong> de un inventario activo de <strong>${totalInventarioBaseDeDatos}</strong> propiedades`;
             }
+            
+            document.getElementById('paginacion-container').classList.toggle('hidden', total <= porPagina);
+            document.getElementById('page-indicator').innerText = `Página ${paginaActual} de ${totalPaginas}`;
             renderizarGrid(inmueblesPagina);
-        }
-
-        function cambiarPagina(direccion) {
-            paginaActual += direccion;
-            actualizarPaginacionYRender();
-            window.scrollTo({ top: 400, behavior: 'smooth' });
         }
 
         function renderizarGrid(inmuebles) {
             const grid = document.getElementById('grid-inmuebles-publico');
             if (inmuebles.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-3 text-center py-10">No hay inmuebles en esta página.</p>`;
+                grid.innerHTML = `<p class="text-gray-500 col-span-3 text-center py-10">No se encontraron propiedades.</p>`;
                 return;
             }
+            const favs = obtenerFavs();
+
             grid.innerHTML = inmuebles.map((inm, index) => {
                 const fotoPrincipal = (inm.fotos_urls && inm.fotos_urls[0]) ? inm.fotos_urls[0] : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800';
+                const isFav = favs.includes(inm.id.toString());
+                const favColor = isFav ? 'text-rose-600 bg-rose-50' : 'text-gray-400 bg-white/90 hover:text-rose-500';
                 const agenteTel = inm.agentes ? inm.agentes.telefono : '584121634256';
-                const mensajeWpp = encodeURIComponent(`Hola, requiero más información sobre esta propiedad: ${inm.tipo} en ${inm.ciudad} ($${inm.precio})`);
+                const mensajeWpp = encodeURIComponent(`Hola, requiero más información de esta propiedad: ${inm.tipo} en ${inm.ciudad} ($${inm.precio})`);
                 
                 return `
-                    <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                    <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition flex flex-col justify-between relative">
+                        <button onclick="toggleFavorito('${inm.id}', event)" class="absolute top-4 right-4 z-10 p-2.5 rounded-full shadow-md text-xl transition ${favColor}">
+                            ${isFav ? '❤️' : '🤍'}
+                        </button>
                         <div>
                             <div class="relative h-60 bg-gray-200">
                                 <img src="${fotoPrincipal}" alt="Inmueble" class="w-full h-full object-cover">
@@ -402,17 +477,14 @@
                                 <span class="absolute bottom-4 left-4 bg-amber-600 text-white font-bold text-lg px-3 py-1 rounded-lg shadow">$${inm.precio}</span>
                             </div>
                             <div class="p-6">
-                                <div class="text-xs font-medium text-amber-600 uppercase tracking-wider mb-1">${inm.ciudad}</div>
-                                <h3 class="text-xl font-bold text-slate-900 mb-2">${inm.tipo.toUpperCase()} en ${inm.ciudad}</h3>
+                                <h3 class="text-xl font-bold text-slate-900 mb-1 line-clamp-1">${inm.tipo.toUpperCase()} en ${inm.ciudad}</h3>
                                 <p class="text-gray-600 text-sm line-clamp-2 mb-4">${inm.detalles}</p>
-                                
-                                <!-- Minimapa Leaflet por tarjeta -->
                                 <div id="minimapa-${inm.id}-${index}" class="w-full h-32 rounded-xl mb-4 z-0 border border-gray-200"></div>
                             </div>
                         </div>
                         <div class="p-6 pt-0 space-y-3">
-                            <button onclick="abrirDetalle('${inm.id}')" class="w-full block text-center bg-slate-900 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl text-sm transition cursor-pointer">
-                                Ver Ficha Completa y Fotos
+                            <button onclick="abrirDetalle('${inm.id}')" class="w-full bg-slate-900 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl text-sm transition">
+                                Ver Ficha Completa
                             </button>
                             <a href="https://wa.me/${agenteTel}?text=${mensajeWpp}" target="_blank" class="w-full block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-xs">
                                 Consultar vía WhatsApp
@@ -422,230 +494,175 @@
                 `;
             }).join('');
             
-            // Inicializar minimapas en cada tarjeta renderizada
             inmuebles.forEach((inm, index) => {
                 setTimeout(() => {
                     const mapId = `minimapa-${inm.id}-${index}`;
                     if (document.getElementById(mapId)) {
-                        const map = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView([10.1808, -68.0056], 14);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-                        L.marker([10.1808, -68.0056]).addTo(map).bindPopup(inm.ciudad);
+                        const coords = obtenerCoordenadas(inm.ciudad);
+                        const map = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView(coords, 14);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                        L.marker(coords).addTo(map).bindPopup(inm.ciudad);
                     }
                 }, 300);
             });
         }
 
-        // FUNCIÓN INTELIGENTE DE BONDADES DE LA ZONA
+        function cambiarPagina(dir) { paginaActual += dir; actualizarPaginacionYRender(); window.scrollTo({ top: 400, behavior: 'smooth' }); }
+
+        // BONDADES REGIONALES PRECISAS
         function generarBondadesZona(ciudad) {
             const c = (ciudad || "").toLowerCase();
-            let farmacias = "Farmatodo y Farmacia San Diego";
-            let cc = "Centro Comercial Sambil y C.C. Metropolis";
-            let vias = "Av. Bolívar Norte y Variante Valencia";
-            let transporte = "Líneas de transporte urbano y accesos rápidos a autopista";
-            if (c.includes("bosque") || c.includes("prebo") || c.includes("parral")) {
-                farmacias = "Farmatodo El Bosque, Farmacia Bien Escribe y Farmahorro";
-                cc = "C.C. Shopping Center y C.C. Piazza";
-                vias = "Av. Bolívar Norte, Av. Andrés Eloy Blanco y Paseo Cabriales";
-                transporte = "Acceso directo a transporte público principal y avenidas consolidadas";
-            } else if (c.includes("san diego") || c.includes("morro")) {
-                farmacias = "Farmatodo Los Jarales y Farmacia San Diego";
-                cc = "C.C. Fin de Siglo y C.C. San Diego";
-                vias = "Av. Don Julio Centeno y Variante Sur";
-                transporte = "Tránsito fluido y transporte suburbano disponible";
+            if (c.includes("chichiriviche") || c.includes("tucacas") || c.includes("falcon")) {
+                return `<div class="bg-blue-50 border border-blue-200 p-4 rounded-2xl text-xs space-y-1 mt-4">
+                    <h5 class="font-bold text-blue-900">🌊 Bondades de la Zona Costera</h5>
+                    <p class="text-gray-700">Acceso privilegiado a playas y cayos del <strong>Parque Nacional Morrocoy</strong>, marinas privadas y alto potencial vacacional.</p></div>`;
+            } else if (c.includes("san diego")) {
+                return `<div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-xs space-y-1 mt-4">
+                    <h5 class="font-bold text-amber-900">📍 Bondades del Municipio</h5>
+                    <p class="text-gray-700">Zona tranquila con pozos de agua, cercanía a <strong>C.C. Fin de Siglo</strong>, Univ. Arturo Michelena y Av. Don Julio Centeno.</p></div>`;
+            } else {
+                return `<div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-xs space-y-1 mt-4">
+                    <h5 class="font-bold text-amber-900">📍 Accesibilidad</h5>
+                    <p class="text-gray-700">Excelente conectividad a vías principales, proximidad a centros de salud, comercios y zonas de abastecimiento consolidadas.</p></div>`;
             }
-            return `
-                <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl space-y-2 mt-4 text-xs">
-                    <h5 class="font-bold text-amber-900 uppercase">📍 Bondades y Puntos de Referencia de la Zona</h5>
-                    <ul class="space-y-1 text-gray-700">
-                        <li><strong>🏥 Farmacias cercanas:</strong> ${farmacias}</li>
-                        <li><strong>🛍️ Centros Comerciales:</strong> ${cc}</li>
-                        <li><strong>🛣️ Vías Principales:</strong> ${vias}</li>
-                        <li><strong>🚌 Transporte:</strong> ${transporte}</li>
-                    </ul>
-                </div>
-            `;
         }
 
         async function abrirDetalle(id) {
-            const inm = cacheInmuebles.find(i => i.id === id);
+            const inm = cacheInmuebles.find(i => i.id == id);
             if (!inm) return;
+            
             const modal = document.getElementById('modal-detalle');
             const contenido = document.getElementById('modal-contenido');
+            
+            const urlCompartir = `${window.location.origin}${window.location.pathname}?id=${inm.id}`;
+            const msjCompartir = encodeURIComponent(`¡Mira esta propiedad que encontré en Inmoinnova!\n\n${inm.tipo.toUpperCase()} en ${inm.ciudad}\nPrecio: $${inm.precio}\n\nVer fotos y detalles aquí: ${urlCompartir}`);
             
             const agenteNombre = inm.agentes ? inm.agentes.nombre_completo : 'Asesor Inmoinnova';
             const agenteTel = inm.agentes ? inm.agentes.telefono : '584121634256';
             const agenteAvatar = (inm.agentes && inm.agentes.foto_perfil_url) ? inm.agentes.foto_perfil_url : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200';
-            const agenteCodigo = inm.agentes ? inm.agentes.codigo_asesor : 'OFVMN';
-            const mensajeWpp = encodeURIComponent(`Hola ${agenteNombre}, deseo más información y detalles legales de esta propiedad: ${inm.tipo} en ${inm.ciudad} ($${inm.precio})`);
+            
             const fotosHtml = inm.fotos_urls ? inm.fotos_urls.map(url => `<img src="${url}" class="w-full h-72 object-cover rounded-2xl shadow-md">`).join('') : '';
-            
-            let videoHtml = '';
-            if (inm.video_url) {
-                videoHtml = `
-                    <div class="my-6 p-4 bg-slate-900 rounded-2xl text-center text-white">
-                        <h4 class="font-bold mb-2">Video / Reel del Inmueble</h4>
-                        <a href="${inm.video_url}" target="_blank" class="inline-block bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition">
-                            ▶ Reproducir Video del Inmueble
-                        </a>
-                    </div>
-                `;
-            }
-            
-            const bondadesHtml = generarBondadesZona(inm.ciudad);
             
             contenido.innerHTML = `
                 <div class="space-y-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1 rounded-lg uppercase">${inm.operacion}</span>
-                            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">${inm.tipo.toUpperCase()} en ${inm.ciudad}</h2>
-                            <p class="text-2xl font-bold text-amber-600 mt-1">$${inm.precio}</p>
-                        </div>
-                    </div>
-                    <!-- Galería completa bajo demanda -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto p-2">
-                        ${fotosHtml}
-                    </div>
-                    ${videoHtml}
                     <div>
-                        <h4 class="font-bold text-slate-900 mb-2">Descripción Completa y Ficha</h4>
-                        <p class="text-gray-700 text-sm whitespace-pre-line bg-gray-50 p-4 rounded-2xl border border-gray-200">${inm.detalles}</p>
-                        ${bondadesHtml}
+                        <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1 rounded-lg uppercase">${inm.operacion}</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">${inm.tipo.toUpperCase()} en ${inm.ciudad}</h2>
+                        <p class="text-2xl font-bold text-amber-600 mt-1">$${inm.precio}</p>
                     </div>
-                    <!-- Minimapa de detalle -->
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto p-2">${fotosHtml}</div>
+                    
+                    ${inm.video_url ? `<div class="text-center"><a href="${inm.video_url}" target="_blank" class="inline-block bg-rose-600 text-white font-bold px-6 py-3 rounded-xl">▶ Ver Video Tour</a></div>` : ''}
+                    
                     <div>
-                        <h4 class="font-bold text-slate-900 mb-2">Ubicación Geográfica en la Zona</h4>
-                        <div id="modal-mapa" class="w-full h-64 rounded-2xl border border-gray-200"></div>
+                        <h4 class="font-bold mb-2">Descripción Completa</h4>
+                        <p class="text-sm whitespace-pre-line bg-gray-50 p-4 rounded-2xl border border-gray-200">${inm.detalles}</p>
+                        ${generarBondadesZona(inm.ciudad)}
                     </div>
-                    <!-- Botón de descarga de lote y copiado -->
-                    <div class="flex flex-wrap gap-4 pt-2">
-                        <button onclick='copiarFichaYDescargar(${JSON.stringify(inm.fotos_urls)}, ${JSON.stringify(inm.detalles)})' class="flex-1 bg-slate-900 text-white font-semibold py-3 px-4 rounded-xl text-sm hover:bg-amber-600 transition shadow">
-                            Copiar Ficha y Descargar Lote de Fotos
-                        </button>
+                    
+                    <div>
+                        <h4 class="font-bold mb-2">Ubicación</h4>
+                        <div id="modal-mapa" class="w-full h-64 rounded-2xl border border-gray-200 z-0 relative"></div>
                     </div>
-                    <!-- Perfil del Asesor Responsable -->
-                    <div class="bg-slate-50 p-6 rounded-2xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+
+                    <!-- BOTÓN DE COMPARTIR Y DEEP LINKING -->
+                    <div class="flex gap-4 pt-4 border-t border-gray-100">
+                        <a href="https://wa.me/?text=${msjCompartir}" target="_blank" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 rounded-xl text-center transition flex justify-center items-center gap-2">
+                            🔗 Compartir esta Propiedad
+                        </a>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
                         <div class="flex items-center gap-4">
-                            <img src="${agenteAvatar}" alt="Asesor" class="w-16 h-16 rounded-full object-cover shadow border-2 border-amber-500">
+                            <img src="${agenteAvatar}" class="w-14 h-14 rounded-full border-2 border-amber-500 object-cover">
                             <div>
-                                <span class="text-xs font-semibold text-amber-600 uppercase">Realtor Inmoinnova</span>
-                                <h4 class="font-bold text-lg text-slate-900">${agenteNombre}</h4>
-                                <p class="text-xs text-gray-500">Código Asesor: ${agenteCodigo}</p>
+                                <h4 class="font-bold">${agenteNombre}</h4>
+                                <span class="text-xs text-amber-600 font-bold uppercase">Realtor Inmoinnova</span>
                             </div>
                         </div>
-                        <a href="https://wa.me/${agenteTel}?text=${mensajeWpp}" target="_blank" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl text-sm transition shadow text-center">
-                            Contactar con Asesor 💬
-                        </a>
+                        <a href="https://wa.me/${agenteTel}?text=${encodeURIComponent('Hola ' + agenteNombre + ', deseo más información de: ' + inm.tipo + ' en ' + inm.ciudad)}" target="_blank" class="bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl w-full sm:w-auto text-center">Contactar Asesor</a>
                     </div>
                 </div>
             `;
             
-            // Si el modal de chat está abierto, lo ocultamos para que no estorbe
             document.getElementById('chat-window').classList.add('hidden');
+            document.getElementById('modal-detalle').classList.replace('hidden', 'flex');
             
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            // Cargar mapa modal
             setTimeout(() => {
                 if (document.getElementById('modal-mapa')) {
-                    const mModal = L.map('modal-mapa').setView([10.1808, -68.0056], 15);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mModal);
-                    L.marker([10.1808, -68.0056]).addTo(mModal).bindPopup(`Ubicación en ${inm.ciudad}`).openPopup();
+                    const coords = obtenerCoordenadas(inm.ciudad);
+                    const mModal = L.map('modal-mapa').setView(coords, 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mModal);
+                    L.marker(coords).addTo(mModal).bindPopup(inm.ciudad).openPopup();
                 }
             }, 300);
         }
 
         function cerrarModalDetalle() {
-            const modal = document.getElementById('modal-detalle');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
+            document.getElementById('modal-detalle').classList.replace('flex', 'hidden');
+            window.history.pushState({}, document.title, window.location.pathname);
         }
 
-        function copiarFichaYDescargar(urls, detalles) {
-            navigator.clipboard.writeText(detalles);
-            alert("¡Ficha descriptiva copiada al portapapeles con éxito! Se abrirán las fotos del inmueble en nuevas pestañas para su descarga.");
-            urls.forEach(url => window.open(url, '_blank'));
-        }
-
-        async function cargarAsesoresPublicos() {
-            const { data: agentes, error } = await supabaseClient.from('agentes').select('*').eq('aprobado', true);
-            const grid = document.getElementById('grid-agentes-publico');
-            
-            if (error || !agentes || agentes.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-4 text-center py-6">Pronto mostraremos a nuestros asesores certificados.</p>`;
-                return;
+        // DEEP LINKING AL INICIAR
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idInmuebleUrl = urlParams.get('id');
+            if (idInmuebleUrl) {
+                let intentos = 0;
+                let checkExist = setInterval(() => {
+                   if (cacheInmuebles.length > 0) {
+                      clearInterval(checkExist);
+                      abrirDetalle(idInmuebleUrl);
+                   }
+                   if (++intentos > 20) clearInterval(checkExist);
+                }, 500);
             }
+        });
+
+        // CARGAR ASESORES
+        async function cargarAsesoresPublicos() {
+            const { data: agentes } = await supabaseClient.from('agentes').select('*').eq('aprobado', true);
+            const grid = document.getElementById('grid-agentes-publico');
+            if (!agentes || agentes.length === 0) return;
             
             grid.innerHTML = agentes.map(ag => {
-                const avatar = ag.foto_perfil_url ? ag.foto_perfil_url : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200';
                 const msgSolicitud = encodeURIComponent(`Hola ${ag.nombre_completo}, quiero solicitar tus servicios como agente inmobiliario.`);
-                return `
-                    <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center justify-between shadow-xs">
-                        <div>
-                            <div class="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 border-2 border-amber-500 shadow">
-                                <img src="${avatar}" alt="${ag.nombre_completo}" class="w-full h-full object-cover">
-                            </div>
-                            <span class="text-xs font-bold text-amber-600 uppercase tracking-widest">Realtor</span>
-                            <h3 class="font-bold text-slate-900 text-lg mt-1">${ag.nombre_completo}</h3>
+                return `<div class="bg-gray-50 p-6 rounded-2xl border text-center shadow-xs">
+                            <img src="${ag.foto_perfil_url}" class="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-amber-500 object-cover">
+                            <h3 class="font-bold text-lg">${ag.nombre_completo}</h3>
                             <p class="text-xs text-gray-500 mb-4">Código: ${ag.codigo_asesor}</p>
-                        </div>
-                        <a href="https://wa.me/${ag.telefono}?text=${msgSolicitud}" target="_blank" class="w-full bg-slate-900 hover:bg-amber-600 text-white font-medium py-2 rounded-xl text-xs transition shadow-xs">
-                            Contactar Asesor
-                        </a>
-                    </div>
-                `;
+                            <a href="https://wa.me/${ag.telefono}?text=${msgSolicitud}" target="_blank" class="block w-full bg-slate-900 hover:bg-amber-600 text-white py-2 rounded-xl text-xs font-bold transition">Contactar</a>
+                        </div>`;
             }).join('');
         }
 
-        // ASISTENTE VIRTUAL INTELIGENTE CON BOTÓN DE REDIRECCIÓN A FICHA
-        function toggleChat() {
-            const win = document.getElementById('chat-window');
-            win.classList.toggle('hidden');
-        }
-
+        // CHATBOT INTERACTIVO
+        function toggleChat() { document.getElementById('chat-window').classList.toggle('hidden'); }
         async function enviarMensajeChat() {
             const input = document.getElementById('chat-input');
-            const texto = input.value.trim();
+            const texto = input.value.trim().toLowerCase();
             if (!texto) return;
             
-            const mensajes = document.getElementById('chat-messages');
-            mensajes.innerHTML += `<div class="bg-slate-900 text-white p-3 rounded-xl ml-auto max-w-[85%] text-right">${texto}</div>`;
+            const msjs = document.getElementById('chat-messages');
+            msjs.innerHTML += `<div class="bg-slate-900 text-white p-3 rounded-xl ml-auto max-w-[85%] text-right">${texto}</div>`;
             input.value = '';
-            mensajes.scrollTop = mensajes.scrollHeight;
+            msjs.scrollTop = msjs.scrollHeight;
             
-            const t = texto.toLowerCase();
-            let resultados = cacheInmuebles.filter(i => {
-                return (i.tipo && i.tipo.toLowerCase().includes(t)) || 
-                       (i.ciudad && i.ciudad.toLowerCase().includes(t)) || 
-                       (i.operacion && i.operacion.toLowerCase().includes(t)) ||
-                       (i.detalles && i.detalles.toLowerCase().includes(t));
-            });
+            let res = cacheInmuebles.filter(i => (i.tipo && i.tipo.toLowerCase().includes(texto)) || (i.ciudad && i.ciudad.toLowerCase().includes(texto)));
 
             setTimeout(() => {
-                if (resultados.length > 0) {
-                    let respuesta = `Encontré ${resultados.length} opción(es) que coinciden: <br><br>`;
-                    
-                    // Ahora el bot genera botones interactivos
-                    resultados.slice(0, 3).forEach(r => {
-                        respuesta += `
-                            <div class="mb-3 border-l-2 border-amber-500 pl-2">
-                                <strong>${r.tipo.toUpperCase()} en ${r.ciudad}</strong> ($${r.precio})<br>
-                                <button onclick="abrirDetalle('${r.id}')" class="mt-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-[10px] font-bold py-1 px-2 rounded-lg transition border border-amber-300">
-                                    Ver Ficha del Inmueble ➔
-                                </button>
-                            </div>
-                        `;
-                    });
-                    
-                    if (resultados.length > 3) {
-                        respuesta += `<br><span class="text-gray-500">Hay más resultados en el catálogo general.</span>`;
-                    }
-                    mensajes.innerHTML += `<div class="bg-white p-3 rounded-xl border border-gray-200 shadow-xs max-w-[85%]">${respuesta}</div>`;
+                if (res.length > 0) {
+                    let resp = `Encontré opciones:<br><br>` + res.slice(0, 3).map(r => `
+                        <div class="mb-2 border-l-2 border-amber-500 pl-2">
+                            <strong>${r.tipo.toUpperCase()} en ${r.ciudad}</strong><br>
+                            <button onclick="abrirDetalle('${r.id}')" class="text-amber-700 text-[10px] font-bold underline cursor-pointer">Ver ficha ➔</button>
+                        </div>`).join('');
+                    msjs.innerHTML += `<div class="bg-white p-3 rounded-xl border border-gray-200 max-w-[85%]">${resp}</div>`;
                 } else {
-                    mensajes.innerHTML += `<div class="bg-white p-3 rounded-xl border border-gray-200 shadow-xs max-w-[85%]">No encontré una coincidencia exacta con ese término, pero puedes contactar directamente a nuestro canal general por WhatsApp para ayudarte personalmente.</div>`;
+                    msjs.innerHTML += `<div class="bg-white p-3 rounded-xl border border-gray-200 max-w-[85%]">No hallé coincidencias exactas. Usa nuestro formulario de búsqueda personalizada arriba.</div>`;
                 }
-                mensajes.scrollTop = mensajes.scrollHeight;
+                msjs.scrollTop = msjs.scrollHeight;
             }, 600);
         }
 
