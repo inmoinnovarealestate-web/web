@@ -53,7 +53,6 @@
                 <a href="#" onclick="toggleAuthMode()" id="auth-toggle-link" class="text-amber-600 font-semibold hover:underline">¿No tienes cuenta? Regístrate aquí</a>
             </p>
         </div>
-
         <!-- PANEL DE GESTIÓN -->
         <div id="dashboard-section" class="hidden space-y-6">
             
@@ -79,14 +78,12 @@
                     <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2.5 rounded-xl text-xs font-semibold transition">Salir</button>
                 </div>
             </div>
-
             <!-- ACORDEÓN: REGISTRAR / EDITAR INMUEBLES -->
             <div id="contenedor-formulario" class="hidden">
                 <button onclick="toggleAcordeonCarga()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl shadow-md flex justify-between items-center transition">
                     <span class="flex items-center gap-2"><span class="text-xl">➕</span> <span id="texto-btn-acordeon">Registrar Nuevo Inmueble</span></span>
                     <span id="icono-acordeon" class="transform transition-transform duration-300">▼</span>
                 </button>
-
                 <div id="panel-carga" class="bg-white rounded-2xl shadow-sm border border-gray-100 mt-3 acordeon-contenido">
                     <div class="p-5 sm:p-8">
                         <h3 id="form-title" class="text-lg font-bold mb-4 border-b border-gray-100 pb-2">Formulario de Propiedad</h3>
@@ -131,7 +128,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- MIS INMUEBLES -->
             <div class="bg-white p-5 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
                 <h3 class="text-lg font-bold mb-4 border-b border-gray-100 pb-2">Mi Inventario Activo</h3>
@@ -141,7 +137,6 @@
             </div>
         </div>
     </div>
-
     <!-- SCRIPTS CORE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -183,7 +178,6 @@
             const password = document.getElementById('password').value;
             const btn = document.getElementById('auth-btn');
             btn.disabled = true; btn.innerText = "Procesando...";
-
             try {
                 if (isRegistering) {
                     const nombre = document.getElementById('nombre').value;
@@ -278,6 +272,7 @@
                 const uploadRes = await fetch(resFirma.signedUrl, { method: 'PUT', headers: { 'Content-Type': file.type || 'image/jpeg' }, body: file });
                 if (!uploadRes.ok) throw new Error('Fallo al enviar la imagen.');
                 
+                // Borra la foto de perfil antigua en Cloudflare R2 vía Vercel
                 if (currentAgente.foto_perfil_url && currentAgente.foto_perfil_url.includes('r2.dev')) {
                     await borrarLoteDeR2([currentAgente.foto_perfil_url]);
                 }
@@ -330,52 +325,48 @@
         }
 
         // =========================================================================
-        // MOTOR DE DESCARGA SECUENCIAL ROBUSTA (AUTOMÁTICA, SIN BLOQUEOS Y REPETIBLE)
+        // MOTOR DE DESCARGA ANTI-CORS (EVITA EL BLOQUEO DE FETCH MEDIANTE ENLACES VIRTUALES)
         // =========================================================================
         async function descargarLoteFotos(event, urls, detalles) {
             if (!urls || urls.length === 0) { alert("Este inmueble no tiene fotos."); return; }
             
-            // 1. Copiamos la ficha inmediatamente al portapapeles
+            // 1. Copiamos la ficha al portapapeles instantáneamente
             navigator.clipboard.writeText(detalles);
             
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
-            btn.innerHTML = "⏳ Iniciando...";
+            btn.innerHTML = "⏳ Descargando...";
             btn.disabled = true;
 
             try {
-                // Identificador único de tiempo para evitar que el navegador bloquee descargas repetidas del mismo inmueble
                 const timestampUnico = Date.now();
 
-                // 2. Bucle secuencial con retardo que fuerza la descarga individual limpia directo a la galería/descargas
+                // 2. Descarga directa por enlace virtual sin usar fetch() (Esquiva el error CORS de Cloudflare)
                 for (let i = 0; i < urls.length; i++) {
                     btn.innerHTML = `⏳ Foto ${i + 1} de ${urls.length}...`;
                     
-                    const response = await fetch(urls[i]);
-                    const blob = await response.blob();
-                    const urlLocal = window.URL.createObjectURL(blob);
-                    
                     const a = document.createElement('a');
                     a.style.display = 'none';
-                    a.href = urlLocal;
+                    a.href = urls[i];
+                    a.target = '_blank';
                     
-                    // Nombre dinámico con timestamp para que el navegador NUNCA lo detecte como duplicado si lo vuelve a descargar
+                    // Forzamos el atributo download para el almacenamiento del dispositivo
                     a.download = `Inmoinnova_${timestampUnico}_Foto_${i + 1}.jpg`;
+                    a.setAttribute('download', `Inmoinnova_${timestampUnico}_Foto_${i + 1}.jpg`);
                     
                     document.body.appendChild(a);
                     a.click();
                     
-                    // Pausa de 700ms obligatoria entre cada foto: evita el bloqueo de seguridad móvil y descarga una por una fluidamente
-                    await new Promise(r => setTimeout(r, 700));
+                    // Pausa de 600ms entre cada descarga para asegurar estabilidad
+                    await new Promise(r => setTimeout(r, 600));
                     
-                    window.URL.revokeObjectURL(urlLocal);
                     document.body.removeChild(a);
                 }
                 
-                alert("¡Ficha copiada y todas las fotos descargadas automáticamente a tu dispositivo!");
+                alert("¡Ficha copiada y orden de descarga enviada al dispositivo!");
             } catch (error) {
-                console.error("Error en la descarga secuencial:", error);
-                alert("Hubo un inconveniente con la descarga automática. Abriendo respaldo seguro...");
+                console.error("Error en la descarga:", error);
+                alert("Abriendo imágenes en pestañas de respaldo...");
                 urls.forEach(url => window.open(url, '_blank'));
             } finally {
                 btn.innerHTML = originalText;
@@ -415,11 +406,20 @@
             document.getElementById('form-title').innerText = "Formulario de Propiedad";
         }
 
+        // =========================================================================
+        // MOTOR DE BORRADO DE ARCHIVOS EN R2 VÍA VERCEL
+        // =========================================================================
         async function borrarLoteDeR2(urls) {
             if (!urls || urls.length === 0) return;
             try {
-                await fetch('https://inmoinnova-api.vercel.app/api/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ urls }) });
-            } catch (e) { console.log("Error R2:", e); }
+                await fetch('https://inmoinnova-api.vercel.app/api/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ urls })
+                });
+            } catch (e) {
+                console.log("Error al limpiar archivos en R2:", e);
+            }
         }
 
         async function guardarInmueble(event) {
@@ -465,6 +465,7 @@
                         if (!uploadRes.ok) throw new Error(`Fallo foto ${i + 1}`);
                         nuevasFotos.push(resFirma.publicUrl);
                     }
+                    // Borra las fotos anteriores del inmueble en R2 si se reemplazaron al editar
                     if (id && fotosAntiguas.length > 0) await borrarLoteDeR2(fotosAntiguas);
                     fotos_urls = nuevasFotos;
                 }
@@ -494,6 +495,7 @@
         async function eliminarInmueble(id) {
             if (!confirm("¿Estás seguro de eliminar este inmueble permanentemente?")) return;
             const { data: inmueble } = await supabaseClient.from('inmuebles').select('fotos_urls').eq('id', id).single();
+            // Borra todas las fotos de R2 al eliminar el inmueble permanentemente
             if (inmueble && inmueble.fotos_urls) await borrarLoteDeR2(inmueble.fotos_urls);
             await supabaseClient.from('inmuebles').delete().eq('id', id);
             cargarMisInmuebles();
