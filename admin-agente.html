@@ -2,32 +2,38 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel de Control Profesional | Inmoinnova Real Estate</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Librería de compresión de imágenes de alta calidad -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.js"></script>
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* CSS para la transición suave del acordeón */
+        .acordeon-contenido { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out, opacity 0.3s ease; opacity: 0; }
+        .acordeon-abierto { max-height: 2500px; opacity: 1; }
+    </style>
 </head>
 <body class="bg-gray-100 text-gray-900 antialiased min-h-screen flex flex-col justify-between">
-    <div class="max-w-5xl mx-auto px-4 py-10 w-full">
+    <div class="max-w-5xl mx-auto px-3 py-6 sm:px-4 sm:py-10 w-full">
+        
         <!-- VISTA DE AUTENTICACIÓN / REGISTRO -->
-        <div id="auth-section" class="bg-white p-8 rounded-2xl shadow-md max-w-md mx-auto">
-            <h2 id="auth-title" class="text-2xl font-bold mb-6 text-slate-900 text-center">Acceso Asesores Inmoinnova</h2>
+        <div id="auth-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-md max-w-md mx-auto">
+            <h2 id="auth-title" class="text-xl sm:text-2xl font-bold mb-6 text-slate-900 text-center">Acceso Asesores Inmoinnova</h2>
             <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
                 <div id="nombre-field" class="hidden">
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nombre Completo</label>
-                    <input type="text" id="nombre" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                    <input type="text" id="nombre" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500">
                 </div>
                 <div id="codigo-field" class="hidden">
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Código de Asesor (Ej: OFVMN)</label>
-                    <input type="text" id="codigo" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm uppercase">
+                    <input type="text" id="codigo" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm uppercase outline-none focus:border-amber-500">
                 </div>
                 <div id="telefono-field" class="hidden">
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Teléfono WhatsApp</label>
-                    <input type="text" id="telefono" placeholder="+58412..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                    <input type="text" id="telefono" placeholder="+58412..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500">
                 </div>
                 <div id="avatar-field" class="hidden">
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Foto de Perfil del Asesor</label>
@@ -35,99 +41,137 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Correo Electrónico</label>
-                    <input type="email" id="email" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                    <input type="email" id="email" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Contraseña</label>
-                    <input type="password" id="password" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                    <input type="password" id="password" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500">
                 </div>
                 <button type="submit" id="auth-btn" class="w-full bg-slate-900 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl transition">Iniciar Sesión</button>
             </form>
             <p class="text-center text-xs mt-6 text-gray-500">
-                <a href="#" onclick="toggleAuthMode()" id="auth-toggle-link" class="text-amber-600 font-semibold">¿No tienes cuenta? Regístrate aquí</a>
+                <a href="#" onclick="toggleAuthMode()" id="auth-toggle-link" class="text-amber-600 font-semibold hover:underline">¿No tienes cuenta? Regístrate aquí</a>
             </p>
         </div>
+
         <!-- PANEL DE GESTIÓN -->
-        <div id="dashboard-section" class="hidden space-y-8">
-            <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
-                <div class="flex items-center gap-4">
-                    <div id="dashboard-avatar" class="w-16 h-16 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-bold text-slate-700 shadow-inner border-2 border-amber-500">II</div>
-                    <div>
-                        <h1 id="welcome-msg" class="text-xl font-bold">Bienvenido</h1>
+        <div id="dashboard-section" class="hidden space-y-6">
+            
+            <!-- HEADER -->
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
+                <div class="flex items-center gap-4 w-full sm:w-auto">
+                    <!-- FOTO DE PERFIL CORREGIDA: relative con aspect-square y object-cover -->
+                    <div class="relative w-16 h-16 shrink-0">
+                        <div id="dashboard-avatar" class="w-full h-full rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-bold text-slate-700 shadow-inner border-2 border-amber-500">
+                            <!-- La imagen se inyecta por JS con class="w-full h-full object-cover" -->
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h1 id="welcome-msg" class="text-lg sm:text-xl font-bold leading-tight">Bienvenido</h1>
                         <p id="estatus-msg" class="text-xs text-amber-600 font-semibold mt-1">Estatus: Verificando...</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                    <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2 rounded-xl text-xs font-medium transition shadow-xs flex items-center gap-2">
+                    <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-xs flex items-center gap-2">
                         📷 Cambiar Foto
                         <input type="file" id="nuevo-avatar-file" accept="image/*" class="hidden" onchange="actualizarFotoPerfil(event)">
                     </label>
-                    <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl text-xs font-medium transition">Cerrar Sesión</button>
+                    <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2.5 rounded-xl text-xs font-semibold transition">Salir</button>
                 </div>
             </div>
-            <!-- FORMULARIO DE CARGA / EDICIÓN DE INMUEBLES -->
-            <div id="panel-carga" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hidden">
-                <h3 id="form-title" class="text-lg font-bold mb-4">Registrar Nuevo Inmueble</h3>
-                <form onsubmit="guardarInmueble(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="hidden" id="edit-inmueble-id">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Operación</label>
-                        <select id="inm-operacion" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
-                            <option value="venta">Venta</option>
-                            <option value="alquiler">Alquiler</option>
-                        </select>
+
+            <!-- ACORDEÓN: REGISTRAR / EDITAR INMUEBLES -->
+            <div id="contenedor-formulario" class="hidden">
+                <!-- Botón Activador del Acordeón -->
+                <button onclick="toggleAcordeonCarga()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl shadow-md flex justify-between items-center transition">
+                    <span class="flex items-center gap-2"><span class="text-xl">➕</span> <span id="texto-btn-acordeon">Registrar Nuevo Inmueble</span></span>
+                    <span id="icono-acordeon" class="transform transition-transform duration-300">▼</span>
+                </button>
+
+                <!-- Contenido del Formulario (Oculto por defecto) -->
+                <div id="panel-carga" class="bg-white rounded-2xl shadow-sm border border-gray-100 mt-3 acordeon-contenido">
+                    <div class="p-5 sm:p-8">
+                        <h3 id="form-title" class="text-lg font-bold mb-4 border-b border-gray-100 pb-2">Formulario de Propiedad</h3>
+                        <form onsubmit="guardarInmueble(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="hidden" id="edit-inmueble-id">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Operación</label>
+                                <select id="inm-operacion" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-amber-500">
+                                    <option value="venta">Venta</option>
+                                    <option value="alquiler">Alquiler</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tipo de Inmueble (Texto Libre)</label>
+                                <input type="text" id="inm-tipo" required placeholder="Ej: Apartamento, Quinta, Townhouse, Local" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ciudad / Zona</label>
+                                <input type="text" id="inm-ciudad" required placeholder="Ej: El Bosque, Valencia" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Precio ($)</label>
+                                <input type="number" id="inm-precio" required placeholder="50000" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-amber-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fotos del Inmueble (Hasta 30 fotos)</label>
+                                <input type="file" id="inm-fotos" accept="image/*" multiple class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-900 file:text-white hover:file:bg-amber-600">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Enlace de Video (Instagram Reel / YouTube opcional)</label>
+                                <input type="url" id="inm-video" placeholder="https://www.instagram.com/reel/..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-amber-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Descripción Completa (Ficha)</label>
+                                <textarea id="inm-detalles" rows="4" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-amber-500" placeholder="Detalle completo del inmueble..."></textarea>
+                            </div>
+                            <div class="md:col-span-2 flex flex-col sm:flex-row gap-3 mt-2">
+                                <button type="submit" id="btn-guardar" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3.5 rounded-xl transition shadow-md">Guardar Inmueble</button>
+                                <button type="button" onclick="cancelarEdicion()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-6 py-3.5 rounded-xl transition">Cancelar</button>
+                            </div>
+                        </form>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tipo de Inmueble (Texto Libre)</label>
-                        <input type="text" id="inm-tipo" required placeholder="Ej: Apartamento, Quinta, Townhouse, Local" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Ciudad / Zona</label>
-                        <input type="text" id="inm-ciudad" required placeholder="Ej: El Bosque, Valencia" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Precio ($)</label>
-                        <input type="number" id="inm-precio" required placeholder="50000" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fotos del Inmueble (Hasta 30 fotos con compresión inteligente)</label>
-                        <input type="file" id="inm-fotos" accept="image/*" multiple class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-900 file:text-white hover:file:bg-amber-600">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Enlace de Video (Instagram Reel / YouTube opcional)</label>
-                        <input type="url" id="inm-video" placeholder="https://www.instagram.com/reel/..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Descripción Completa (Ficha)</label>
-                        <textarea id="inm-detalles" rows="4" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm" placeholder="Detalle completo del inmueble..."></textarea>
-                    </div>
-                    <div class="md:col-span-2 flex gap-4">
-                        <button type="submit" id="btn-guardar" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 rounded-xl transition shadow-md">Guardar Inmueble</button>
-                        <button type="button" onclick="resetFormulario()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl transition">Cancelar</button>
-                    </div>
-                </form>
+                </div>
             </div>
+
             <!-- MIS INMUEBLES -->
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-bold">Mis Inmuebles</h3>
-                    <button onclick="mostrarFormularioCrear()" id="btn-nuevo-inm" class="hidden bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-600 transition shadow">+ Nuevo Inmueble</button>
-                </div>
+            <div class="bg-white p-5 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-bold mb-4 border-b border-gray-100 pb-2">Mi Inventario Activo</h3>
                 <div id="mis-inmuebles-list" class="space-y-4">
                     <p class="text-gray-500 text-sm">Cargando inventario...</p>
                 </div>
             </div>
+
         </div>
     </div>
+
+    <!-- SCRIPTS CORE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // CONFIGURACIÓN SUPABASE (INTACTA)
         const SUPABASE_URL = 'https://kyxwiulxaazhyeqghjhh.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_3EjwKaWsoX4lKNEBk_9k6A_u3-akbu9';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         let isRegistering = false;
         let currentUser = null;
         let currentAgente = null;
 
+        // LÓGICA DEL ACORDEÓN (MÓVIL FRIENDLY)
+        function toggleAcordeonCarga(forzarAbrir = false) {
+            const panel = document.getElementById('panel-carga');
+            const icono = document.getElementById('icono-acordeon');
+            
+            if (forzarAbrir || !panel.classList.contains('acordeon-abierto')) {
+                panel.classList.add('acordeon-abierto');
+                icono.classList.add('rotate-180');
+            } else {
+                panel.classList.remove('acordeon-abierto');
+                icono.classList.remove('rotate-180');
+            }
+        }
+
+        // AUTENTICACIÓN (INTACTA)
         function toggleAuthMode() {
             isRegistering = !isRegistering;
             document.getElementById('auth-title').innerText = isRegistering ? "Registro de Nuevo Asesor" : "Acceso Asesores Inmoinnova";
@@ -143,54 +187,53 @@
             event.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const btn = document.getElementById('auth-btn');
+            btn.disabled = true; btn.innerText = "Procesando...";
 
-            if (isRegistering) {
-                const nombre = document.getElementById('nombre').value;
-                const codigo = document.getElementById('codigo').value.toUpperCase();
-                const telefono = document.getElementById('telefono').value;
-                const avatarInput = document.getElementById('avatar-file');
-                let foto_perfil_url = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200";
-
-                const { data, error } = await supabaseClient.auth.signUp({ email, password });
-                if (error) { alert("Error: " + error.message); return; }
-
-                if (data.user && avatarInput.files.length > 0) {
-                    let file = avatarInput.files[0];
-                    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
-                    try { file = await imageCompression(file, options); } catch (e) {}
-
-                    try {
-                        const reqFirma = await fetch('https://inmoinnova-api.vercel.app/api/upload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
-                        });
-                        const resFirma = await reqFirma.json();
-
-                        if (resFirma.signedUrl) {
-                            const uploadRes = await fetch(resFirma.signedUrl, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': file.type || 'image/jpeg' },
-                                body: file
+            try {
+                if (isRegistering) {
+                    const nombre = document.getElementById('nombre').value;
+                    const codigo = document.getElementById('codigo').value.toUpperCase();
+                    const telefono = document.getElementById('telefono').value;
+                    const avatarInput = document.getElementById('avatar-file');
+                    let foto_perfil_url = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200";
+                    
+                    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                    if (error) throw new Error(error.message);
+                    
+                    if (data.user && avatarInput.files.length > 0) {
+                        let file = avatarInput.files[0];
+                        const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
+                        try { file = await imageCompression(file, options); } catch (e) {}
+                        
+                        try {
+                            const reqFirma = await fetch('https://inmoinnova-api.vercel.app/api/upload', {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
                             });
-                            if (uploadRes.ok) foto_perfil_url = resFirma.publicUrl;
-                        }
-                    } catch (e) {
-                        console.log("No se pudo subir el avatar en R2, usando por defecto.");
+                            const resFirma = await reqFirma.json();
+                            if (resFirma.signedUrl) {
+                                const uploadRes = await fetch(resFirma.signedUrl, { method: 'PUT', headers: { 'Content-Type': file.type || 'image/jpeg' }, body: file });
+                                if (uploadRes.ok) foto_perfil_url = resFirma.publicUrl;
+                            }
+                        } catch (e) { console.log("Fallo subida avatar R2, usando por defecto."); }
                     }
+                    
+                    const { error: errPerfil } = await supabaseClient.from('agentes').insert([{
+                        id: data.user.id, email, nombre_completo: nombre, codigo_asesor: codigo, telefono, foto_perfil_url, aprobado: false
+                    }]);
+                    if (errPerfil) throw new Error(errPerfil.message);
+                    
+                    alert("¡Registro exitoso! Pendiente de aprobación por el Bróker.");
+                    location.reload();
+                } else {
+                    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    if (error) throw new Error("Credenciales incorrectas: " + error.message);
+                    verificarSesion();
                 }
-
-                const { error: errPerfil } = await supabaseClient.from('agentes').insert([{
-                    id: data.user.id, email, nombre_completo: nombre, codigo_asesor: codigo, telefono, foto_perfil_url, aprobado: false
-                }]);
-
-                if (errPerfil) { alert("Error perfil: " + errPerfil.message); return; }
-                alert("¡Registro exitoso! Pendiente de aprobación por el Bróker.");
-                location.reload();
-            } else {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) { alert("Credenciales incorrectas: " + error.message); return; }
-                verificarSesion();
+            } catch(e) {
+                alert(e.message);
+            } finally {
+                btn.disabled = false; btn.innerText = isRegistering ? "Registrarse" : "Iniciar Sesión";
             }
         }
 
@@ -198,22 +241,26 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) return;
             currentUser = session.user;
+            
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
-
+            
             const { data: agente } = await supabaseClient.from('agentes').select('*').eq('id', currentUser.id).single();
             currentAgente = agente;
+            
             if (!agente) { document.getElementById('welcome-msg').innerText = "Perfil no encontrado."; return; }
-
-            document.getElementById('welcome-msg').innerText = `Hola, ${agente.nombre_completo} (${agente.codigo_asesor})`;
+            
+            document.getElementById('welcome-msg').innerText = `Hola, ${agente.nombre_completo}`;
+            
+            // CORRECCIÓN FOTO ALARGADA: Inyectando image con object-cover
             if (agente.foto_perfil_url) {
                 document.getElementById('dashboard-avatar').innerHTML = `<img src="${agente.foto_perfil_url}" class="w-full h-full object-cover">`;
             }
             
             if (agente.aprobado) {
                 document.getElementById('estatus-msg').innerText = "Estatus: Aprobado Activo ✅";
-                document.getElementById('panel-carga').classList.remove('hidden');
-                document.getElementById('btn-nuevo-inm').classList.remove('hidden');
+                document.getElementById('estatus-msg').className = "text-xs text-emerald-600 font-semibold mt-1";
+                document.getElementById('contenedor-formulario').classList.remove('hidden');
                 cargarMisInmuebles();
             } else {
                 document.getElementById('estatus-msg').innerText = "Estatus: Pendiente de aprobación por el Bróker ⏳";
@@ -223,62 +270,64 @@
         async function actualizarFotoPerfil(event) {
             let file = event.target.files[0];
             if (!file) return;
-
+            const originalLbl = event.target.parentElement.innerHTML;
+            event.target.parentElement.innerHTML = "⏳ Subiendo...";
+            
             try {
                 const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
                 try { file = await imageCompression(file, options); } catch (e) {}
-
                 const reqFirma = await fetch('https://inmoinnova-api.vercel.app/api/upload', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
                 });
-
                 const resFirma = await reqFirma.json();
                 if (!resFirma.signedUrl) throw new Error(resFirma.error || 'Error al obtener permiso de subida.');
-
-                const uploadRes = await fetch(resFirma.signedUrl, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': file.type || 'image/jpeg' },
-                    body: file
-                });
-
+                
+                const uploadRes = await fetch(resFirma.signedUrl, { method: 'PUT', headers: { 'Content-Type': file.type || 'image/jpeg' }, body: file });
                 if (!uploadRes.ok) throw new Error('Fallo al enviar la imagen a Cloudflare.');
-
-                // ¡ACTUALIZADO AQUÍ PARA BUSCAR 'r2.dev'!
+                
                 if (currentAgente.foto_perfil_url && currentAgente.foto_perfil_url.includes('r2.dev')) {
                     await borrarLoteDeR2([currentAgente.foto_perfil_url]);
                 }
-
                 const { error } = await supabaseClient.from('agentes').update({ foto_perfil_url: resFirma.publicUrl }).eq('id', currentAgente.id);
                 if (error) throw error;
-
+                
                 alert("¡Foto de perfil actualizada con éxito!");
                 verificarSesion();
             } catch (err) {
                 alert("Error al actualizar la foto: " + err.message);
+            } finally {
+                event.target.parentElement.innerHTML = originalLbl;
             }
         }
 
+        // CARGA DE INMUEBLES Y BOTONERÍA COMPACTA MÓVIL
         async function cargarMisInmuebles() {
-            const { data: inmuebles } = await supabaseClient.from('inmuebles').select('*').eq('agente_id', currentAgente.id);
+            const { data: inmuebles } = await supabaseClient.from('inmuebles').select('*').eq('agente_id', currentAgente.id).order('id', { ascending: false });
             const list = document.getElementById('mis-inmuebles-list');
+            
             if (!inmuebles || inmuebles.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 text-sm">No tienes inmuebles registrados.</p>`;
+                list.innerHTML = `<p class="text-gray-500 text-sm text-center py-4">No tienes inmuebles registrados.</p>`;
                 return;
             }
+            
             list.innerHTML = inmuebles.map(inm => `
-                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <span class="text-xs font-semibold uppercase px-2 py-1 bg-amber-100 text-amber-800 rounded">${inm.operacion}</span>
-                        <h4 class="font-bold text-slate-900 mt-2">${inm.tipo.toUpperCase()} en ${inm.ciudad} - $${inm.precio}</h4>
-                        <p class="text-xs text-gray-500 line-clamp-1 mt-1">${inm.detalles}</p>
+                <div class="bg-gray-50 rounded-xl border border-gray-200 flex flex-col sm:flex-row overflow-hidden">
+                    <div class="w-full sm:w-32 h-40 sm:h-auto bg-gray-200 relative shrink-0">
+                        <img src="${inm.fotos_urls[0] || ''}" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-1 rounded uppercase">${inm.operacion}</span>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <button onclick='copiarFichaYNavegar(${JSON.stringify(inm.detalles)})' class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-amber-600 transition">Copiar Ficha</button>
-                        <button onclick='descargarLoteFotos(${JSON.stringify(inm.fotos_urls)}, ${JSON.stringify(inm.detalles)})' class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-emerald-700 transition">Descargar Fotos</button>
-                        <button onclick='editarInmueble("${inm.id}", ${JSON.stringify(inm)})' class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-medium hover:bg-gray-300 transition">Editar</button>
-                        <button onclick='eliminarInmueble("${inm.id}")' class="bg-red-100 text-red-600 px-3 py-2 rounded-lg text-xs font-medium hover:bg-red-200 transition">Eliminar</button>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-slate-900 leading-tight">${inm.tipo.toUpperCase()} en ${inm.ciudad}</h4>
+                            <p class="text-amber-600 font-bold text-sm mt-1">$${inm.precio}</p>
+                            <p class="text-xs text-gray-500 line-clamp-2 mt-1">${inm.detalles}</p>
+                        </div>
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-3">
+                            <button onclick='copiarFichaYNavegar(${JSON.stringify(inm.detalles)})' class="bg-slate-200 hover:bg-slate-300 text-slate-800 py-2 rounded-lg text-xs font-semibold transition">📑 Copiar Ficha</button>
+                            <button onclick='descargarLoteFotos(${JSON.stringify(inm.fotos_urls)}, ${JSON.stringify(inm.detalles)})' class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 py-2 rounded-lg text-xs font-semibold transition">⬇️ Bajar Fotos</button>
+                            <button onclick='editarInmueble("${inm.id}", ${JSON.stringify(inm)})' class="bg-amber-100 hover:bg-amber-200 text-amber-800 py-2 rounded-lg text-xs font-semibold transition">✏️ Editar</button>
+                            <button onclick='eliminarInmueble("${inm.id}")' class="bg-red-100 hover:bg-red-200 text-red-700 py-2 rounded-lg text-xs font-semibold transition">🗑️ Borrar</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
@@ -286,47 +335,44 @@
 
         function copiarFichaYNavegar(detalles) {
             navigator.clipboard.writeText(detalles);
-            alert("¡Ficha descriptiva copiada al portapapeles con éxito!");
+            alert("¡Ficha copiada al portapapeles!");
         }
 
-        // ¡ACTUALIZADO: DESCARGA DIRECTA A LA GALERÍA!
+        // LÓGICA DE DESCARGA OPTIMIZADA PARA MÓVILES (Con Delay y Fallback)
         async function descargarLoteFotos(urls, detalles) {
             if (!urls || urls.length === 0) { alert("Este inmueble no tiene fotos."); return; }
             navigator.clipboard.writeText(detalles);
-            alert(`Copiando ficha al portapapeles y descargando ${urls.length} fotos a tu galería. Por favor, espera...`);
-
+            alert(`Ficha copiada. Descargando ${urls.length} fotos secuencialmente. Por favor, no bloquees la pantalla...`);
+            
             for (let i = 0; i < urls.length; i++) {
                 try {
-                    // Convierte la URL en un archivo local descargable
                     const response = await fetch(urls[i]);
                     const blob = await response.blob();
                     const urlLocal = window.URL.createObjectURL(blob);
                     
-                    // Fuerza la descarga nativa
                     const a = document.createElement('a');
                     a.style.display = 'none';
                     a.href = urlLocal;
-                    a.download = `Inmoinnova-Foto-${i + 1}-${Date.now()}.jpg`;
+                    a.download = `Inmoinnova_Foto_${i + 1}.jpg`;
                     document.body.appendChild(a);
                     a.click();
                     
-                    // Limpia la memoria
+                    // Retraso de 600ms vital para que iOS/Android no cancelen descargas múltiples
+                    await new Promise(r => setTimeout(r, 600));
+                    
                     window.URL.revokeObjectURL(urlLocal);
                     document.body.removeChild(a);
                 } catch (e) {
                     console.error("Error al descargar la foto:", e);
+                    // Fallback para navegadores estrictos móviles
+                    window.open(urls[i], '_blank');
                 }
             }
         }
 
-        function mostrarFormularioCrear() {
-            document.getElementById('form-title').innerText = "Registrar Nuevo Inmueble";
-            document.getElementById('edit-inmueble-id').value = "";
-            resetFormulario();
-            document.getElementById('panel-carga').scrollIntoView({ behavior: 'smooth' });
-        }
-
+        // EDICIÓN Y REGISTRO (Integrado con el Acordeón)
         function editarInmueble(id, inm) {
+            document.getElementById('texto-btn-acordeon').innerText = "Editando Propiedad...";
             document.getElementById('form-title').innerText = "Editar Inmueble";
             document.getElementById('edit-inmueble-id').value = id;
             document.getElementById('inm-operacion').value = inm.operacion;
@@ -335,7 +381,14 @@
             document.getElementById('inm-precio').value = inm.precio;
             document.getElementById('inm-video').value = inm.video_url || "";
             document.getElementById('inm-detalles').value = inm.detalles;
-            document.getElementById('panel-carga').scrollIntoView({ behavior: 'smooth' });
+            
+            toggleAcordeonCarga(true); // Abre el acordeón
+            window.scrollTo({ top: document.getElementById('contenedor-formulario').offsetTop - 20, behavior: 'smooth' });
+        }
+
+        function cancelarEdicion() {
+            resetFormulario();
+            toggleAcordeonCarga(); // Cierra el acordeón al cancelar
         }
 
         function resetFormulario() {
@@ -346,21 +399,15 @@
             document.getElementById('inm-video').value = "";
             document.getElementById('inm-detalles').value = "";
             document.getElementById('inm-fotos').value = "";
+            document.getElementById('texto-btn-acordeon').innerText = "Registrar Nuevo Inmueble";
+            document.getElementById('form-title').innerText = "Formulario de Propiedad";
         }
 
-        // ¡ACTUALIZADO: APUNTANDO AL NUEVO MOTOR EN VERCEL!
         async function borrarLoteDeR2(urls) {
             if (!urls || urls.length === 0) return;
             try {
-                // Llama a tu nuevo motor destructor en Vercel
-                await fetch('https://inmoinnova-api.vercel.app/api/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ urls })
-                });
-            } catch (e) {
-                console.log("Error al limpiar archivos en R2:", e);
-            }
+                await fetch('https://inmoinnova-api.vercel.app/api/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ urls }) });
+            } catch (e) { console.log("Error R2:", e); }
         }
 
         async function guardarInmueble(event) {
@@ -380,7 +427,6 @@
             try {
                 let fotos_urls = [];
                 let fotosAntiguas = [];
-
                 if (id) {
                     const { data: antiguo } = await supabaseClient.from('inmuebles').select('fotos_urls').eq('id', id).single();
                     if (antiguo && antiguo.fotos_urls) {
@@ -388,71 +434,45 @@
                         fotos_urls = [...fotosAntiguas];
                     }
                 }
-
+                
                 if (fileInput.files.length > 0) {
-                    if (fileInput.files.length > 30) {
-                        alert("Máximo 30 fotos permitidas por inmueble.");
-                        btnGuardar.disabled = false;
-                        return;
-                    }
-
+                    if (fileInput.files.length > 30) { throw new Error("Máximo 30 fotos permitidas."); }
                     let nuevasFotos = [];
-                    
                     for (let i = 0; i < fileInput.files.length; i++) {
-                        btnGuardar.innerText = `Autorizando foto ${i + 1} de ${fileInput.files.length}...`;
+                        btnGuardar.innerText = `Procesando foto ${i + 1}/${fileInput.files.length}...`;
                         let file = fileInput.files[i];
-
-                        const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true };
-                        try { file = await imageCompression(file, options); } catch (e) {}
-
-                        // 1. Pedir Pase VIP a la API de Vercel
+                        try { file = await imageCompression(file, { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true }); } catch (e) {}
+                        
                         const reqFirma = await fetch('https://inmoinnova-api.vercel.app/api/upload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
+                            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filename: file.name, contentType: file.type || 'image/jpeg' })
                         });
                         const resFirma = await reqFirma.json();
-                        if (!resFirma.signedUrl) throw new Error(resFirma.error || `Error en firma para la foto ${i + 1}`);
-
-                        // 2. Subir directo a Cloudflare R2
-                        btnGuardar.innerText = `Subiendo foto ${i + 1} de ${fileInput.files.length}...`;
-                        const uploadRes = await fetch(resFirma.signedUrl, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': file.type || 'image/jpeg' },
-                            body: file
-                        });
-
-                        if (!uploadRes.ok) throw new Error(`Fallo de conexión en foto ${i + 1}`);
+                        if (!resFirma.signedUrl) throw new Error(`Error en firma foto ${i + 1}`);
+                        
+                        const uploadRes = await fetch(resFirma.signedUrl, { method: 'PUT', headers: { 'Content-Type': file.type || 'image/jpeg' }, body: file });
+                        if (!uploadRes.ok) throw new Error(`Fallo foto ${i + 1}`);
                         nuevasFotos.push(resFirma.publicUrl);
                     }
-
-                    if (id && fotosAntiguas.length > 0) {
-                        await borrarLoteDeR2(fotosAntiguas);
-                    }
+                    if (id && fotosAntiguas.length > 0) await borrarLoteDeR2(fotosAntiguas);
                     fotos_urls = nuevasFotos;
                 }
-
-                if (fotos_urls.length === 0) {
-                    fotos_urls = ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800"];
-                }
-
+                
+                if (fotos_urls.length === 0) fotos_urls = ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800"];
+                
                 if (id) {
                     const { error } = await supabaseClient.from('inmuebles').update({ operacion, tipo, ciudad, precio, video_url, detalles, fotos_urls }).eq('id', id);
                     if (error) throw error;
-                    alert("¡Inmueble actualizado con éxito y archivos sincronizados!");
+                    alert("¡Propiedad actualizada exitosamente!");
                 } else {
-                    const { error } = await supabaseClient.from('inmuebles').insert([{ 
-                        agente_id: currentAgente.id, 
-                        operacion, tipo, ciudad, precio, video_url, detalles, fotos_urls 
-                    }]);
+                    const { error } = await supabaseClient.from('inmuebles').insert([{ agente_id: currentAgente.id, operacion, tipo, ciudad, precio, video_url, detalles, fotos_urls }]);
                     if (error) throw error;
-                    alert("¡Inmueble registrado con éxito!");
+                    alert("¡Propiedad registrada exitosamente!");
                 }
-
-                resetFormulario();
+                
+                cancelarEdicion();
                 cargarMisInmuebles();
             } catch (err) {
-                alert("Error al procesar: " + err.message);
+                alert("Error: " + err.message);
             } finally {
                 btnGuardar.innerText = "Guardar Inmueble";
                 btnGuardar.disabled = false;
@@ -460,24 +480,15 @@
         }
 
         async function eliminarInmueble(id) {
-            if (!confirm("¿Estás seguro de eliminar este inmueble? Se borrarán sus datos y se limpiarán los archivos de la nube.")) return;
-            
+            if (!confirm("¿Estás seguro de eliminar este inmueble permanentemente?")) return;
             const { data: inmueble } = await supabaseClient.from('inmuebles').select('fotos_urls').eq('id', id).single();
-            if (inmueble && inmueble.fotos_urls) {
-                await borrarLoteDeR2(inmueble.fotos_urls);
-            }
-
-            const { error } = await supabaseClient.from('inmuebles').delete().eq('id', id);
-            if (error) { alert("Error al eliminar: " + error.message); return; }
-            alert("Inmueble y archivos eliminados por completo sin dejar rastro.");
+            if (inmueble && inmueble.fotos_urls) await borrarLoteDeR2(inmueble.fotos_urls);
+            await supabaseClient.from('inmuebles').delete().eq('id', id);
             cargarMisInmuebles();
         }
 
-        async function logout() {
-            await supabaseClient.auth.signOut();
-            location.reload();
-        }
-
+        async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
+        
         verificarSesion();
     </script>
 </body>
