@@ -330,66 +330,51 @@
         }
 
         // =========================================================================
-        // NUEVA FUNCIÓN DE DESCARGA NATIVA DIRECTA A LA GALERÍA (WEB SHARE API)
+        // NUEVO SISTEMA DE DESCARGA DIRECTA SECUENCIAL ROBUSTA (A PRUEBA DE BLOQUEOS)
         // =========================================================================
         async function descargarLoteFotos(event, urls, detalles) {
             if (!urls || urls.length === 0) { alert("Este inmueble no tiene fotos."); return; }
             
-            // 1. Copiamos la ficha inmediatamente
+            // 1. Copiamos la ficha al portapapeles instantáneamente
             navigator.clipboard.writeText(detalles);
             
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
-            btn.innerHTML = "⏳ Procesando...";
+            btn.innerHTML = "⏳ Preparando...";
             btn.disabled = true;
 
             try {
-                // 2. Convertimos las URLs a archivos nativos (Blobs) para entregarlos al celular
-                const fileArray = [];
+                // 2. Descarga secuencial con retardo controlado para forzar la bajada directa a la galería/descargas
                 for (let i = 0; i < urls.length; i++) {
-                    btn.innerHTML = `⏳ Leyendo foto ${i+1}...`;
+                    btn.innerHTML = `⏳ Descargando ${i + 1} de ${urls.length}...`;
+                    
                     const response = await fetch(urls[i]);
                     const blob = await response.blob();
+                    const urlLocal = window.URL.createObjectURL(blob);
                     
-                    // Aseguramos la extensión correcta
-                    let ext = urls[i].split('.').pop().split('?')[0];
-                    if (!['jpg', 'jpeg', 'png', 'webp'].includes(ext.toLowerCase())) ext = 'jpg';
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = urlLocal;
                     
-                    const file = new File([blob], `Inmoinnova_Foto_${i + 1}.${ext}`, { type: blob.type || 'image/jpeg' });
-                    fileArray.push(file);
+                    // Nombre optimizado para que el móvil los agrupe y organice
+                    a.download = `Inmoinnova_Inmueble_Foto_${i + 1}.jpg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Pausa de 600ms entre foto y foto para evitar que el navegador móvil bloquee la cola
+                    await new Promise(r => setTimeout(r, 600));
+                    
+                    window.URL.revokeObjectURL(urlLocal);
+                    document.body.removeChild(a);
                 }
-
-                // 3. MAGIA MÓVIL: Usamos navigator.share
-                // Esto abre el menú nativo de iOS/Android. El usuario solo toca "Guardar X Imágenes"
-                if (navigator.canShare && navigator.canShare({ files: fileArray })) {
-                    btn.innerHTML = "📲 Abriendo menú...";
-                    await navigator.share({
-                        files: fileArray,
-                        title: 'Fotos Inmoinnova',
-                        text: 'Guarda las fotos en tu galería para compartirlas.'
-                    });
-                } else {
-                    // Fallback para PC o navegadores antiguos (Descarga secuencial)
-                    btn.innerHTML = "⬇️ Descargando...";
-                    for (let i = 0; i < fileArray.length; i++) {
-                        const urlLocal = window.URL.createObjectURL(fileArray[i]);
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = urlLocal;
-                        a.download = fileArray[i].name;
-                        document.body.appendChild(a);
-                        a.click();
-                        await new Promise(r => setTimeout(r, 400));
-                        window.URL.revokeObjectURL(urlLocal);
-                        document.body.removeChild(a);
-                    }
-                    alert("¡Ficha copiada y fotos descargadas con éxito!");
-                }
+                
+                alert("¡Ficha copiada al portapapeles y todas las fotos descargadas a tu dispositivo con éxito!");
             } catch (error) {
-                console.error("Error en la descarga:", error);
-                alert("Operación cancelada o hubo un problema al procesar las fotos.");
+                console.error("Error en la descarga directa:", error);
+                // Plan B por seguridad extrema: Si algún navegador restringe el fetch, abre las fotos limpiamente
+                alert("El navegador bloqueó la descarga en bloque. Abriendo las imágenes de respaldo...");
+                urls.forEach(url => window.open(url, '_blank'));
             } finally {
-                // Restauramos el botón a la normalidad
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
@@ -484,10 +469,12 @@
                 if (fotos_urls.length === 0) fotos_urls = ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800"];
                 
                 if (id) {
-                    await supabaseClient.from('inmuebles').update({ operacion, tipo, ciudad, precio, video_url, detalles, fotos_urls }).eq('id', id);
+                    const { error } = await supabaseClient.from('inmuebles').update({ operacion, tipo, ciudad, precio, video_url, detalles, fotos_urls }).eq('id', id);
+                    if (error) throw error;
                     alert("¡Propiedad actualizada exitosamente!");
                 } else {
-                    await supabaseClient.from('inmuebles').insert([{ agente_id: currentAgente.id, operacion, tipo, ciudad, precio, video_url, detalles, fotos_urls }]);
+                    const { error } = await supabaseClient.from('inmuebles').insert([{ agente_id: currentAgente.id, operacion, tipo, ciudad, precio, video_url, detalles, fotos_urls }]);
+                    if (error) throw error;
                     alert("¡Propiedad registrada exitosamente!");
                 }
                 
