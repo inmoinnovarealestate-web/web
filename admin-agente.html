@@ -53,7 +53,6 @@
                 <a href="#" onclick="toggleAuthMode()" id="auth-toggle-link" class="text-amber-600 font-semibold hover:underline">¿No tienes cuenta? Regístrate aquí</a>
             </p>
         </div>
-
         <!-- PANEL DE GESTIÓN -->
         <div id="dashboard-section" class="hidden space-y-6">
             
@@ -79,14 +78,12 @@
                     <button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2.5 rounded-xl text-xs font-semibold transition">Salir</button>
                 </div>
             </div>
-
             <!-- ACORDEÓN: REGISTRAR / EDITAR INMUEBLES -->
             <div id="contenedor-formulario" class="hidden">
                 <button onclick="toggleAcordeonCarga()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl shadow-md flex justify-between items-center transition">
                     <span class="flex items-center gap-2"><span class="text-xl">➕</span> <span id="texto-btn-acordeon">Registrar Nuevo Inmueble</span></span>
                     <span id="icono-acordeon" class="transform transition-transform duration-300">▼</span>
                 </button>
-
                 <div id="panel-carga" class="bg-white rounded-2xl shadow-sm border border-gray-100 mt-3 acordeon-contenido">
                     <div class="p-5 sm:p-8">
                         <h3 id="form-title" class="text-lg font-bold mb-4 border-b border-gray-100 pb-2">Formulario de Propiedad</h3>
@@ -131,7 +128,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- MIS INMUEBLES -->
             <div class="bg-white p-5 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
                 <h3 class="text-lg font-bold mb-4 border-b border-gray-100 pb-2">Mi Inventario Activo</h3>
@@ -141,7 +137,6 @@
             </div>
         </div>
     </div>
-
     <!-- SCRIPTS CORE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -152,7 +147,6 @@
         let isRegistering = false;
         let currentUser = null;
         let currentAgente = null;
-
         function toggleAcordeonCarga(forzarAbrir = false) {
             const panel = document.getElementById('panel-carga');
             const icono = document.getElementById('icono-acordeon');
@@ -165,7 +159,6 @@
                 icono.classList.remove('rotate-180');
             }
         }
-
         function toggleAuthMode() {
             isRegistering = !isRegistering;
             document.getElementById('auth-title').innerText = isRegistering ? "Registro de Nuevo Asesor" : "Acceso Asesores Inmoinnova";
@@ -176,7 +169,6 @@
             document.getElementById('telefono-field').classList.toggle('hidden', !isRegistering);
             document.getElementById('avatar-field').classList.toggle('hidden', !isRegistering);
         }
-
         async function handleAuth(event) {
             event.preventDefault();
             const email = document.getElementById('email').value;
@@ -229,7 +221,6 @@
                 btn.disabled = false; btn.innerText = isRegistering ? "Registrarse" : "Iniciar Sesión";
             }
         }
-
         async function verificarSesion() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) return;
@@ -258,7 +249,6 @@
                 document.getElementById('estatus-msg').innerText = "Estatus: Pendiente de aprobación por el Bróker ⏳";
             }
         }
-
         async function actualizarFotoPerfil(event) {
             let file = event.target.files[0];
             if (!file) return;
@@ -290,7 +280,6 @@
                 event.target.parentElement.innerHTML = originalLbl;
             }
         }
-
         async function cargarMisInmuebles() {
             const { data: inmuebles } = await supabaseClient.from('inmuebles').select('*').eq('agente_id', currentAgente.id).order('id', { ascending: false });
             const list = document.getElementById('mis-inmuebles-list');
@@ -322,54 +311,61 @@
                 </div>
             `).join('');
         }
-
         function copiarFichaYNavegar(detalles) {
             navigator.clipboard.writeText(detalles);
             alert("¡Ficha copiada al portapapeles!");
         }
-
+        
         // =========================================================================
-        // MOTOR ORIGINAL RESTAURADO: DESCARGA SECUENCIAL LIMPIA (DIRECTO A GALERÍA)
+        // MOTOR ACTUALIZADO: DESCARGA SECUENCIAL LIMPIA CON ELUSIÓN DE CACHÉ (CORS)
         // =========================================================================
         async function descargarLoteFotos(urls, detalles) {
             if (!urls || urls.length === 0) { alert("Este inmueble no tiene fotos."); return; }
             
             // 1. Copiamos la ficha al portapapeles instantáneamente
             navigator.clipboard.writeText(detalles);
-            alert(`Ficha copiada. Descargando ${urls.length} fotos a tu dispositivo...`);
-
+            alert(`Ficha copiada. Descargando ${urls.length} fotos a tu galería. Por favor no cierres esta ventana...`);
+            
             try {
                 const timestampUnico = Date.now();
-
-                // 2. Ciclo secuencial limpio idéntico al que te funcionaba
+                
+                // 2. Ciclo secuencial limpio para descargar a la galería
                 for (let i = 0; i < urls.length; i++) {
-                    const response = await fetch(urls[i]);
+                    // El parámetro "?v=" obliga al navegador a pedir la foto original con los permisos CORS correctos a Cloudflare R2
+                    const urlSegura = urls[i] + "?v=" + timestampUnico + i;
+                    
+                    const response = await fetch(urlSegura, {
+                        method: 'GET',
+                        mode: 'cors',
+                        cache: 'no-store'
+                    });
+                    
+                    if (!response.ok) throw new Error("Error obteniendo la imagen del servidor");
+                    
                     const blob = await response.blob();
                     const urlLocal = window.URL.createObjectURL(blob);
                     
                     const a = document.createElement('a');
                     a.style.display = 'none';
                     a.href = urlLocal;
-                    
-                    // Nombre con timestamp para permitir descargas repetidas e indefinidas sin bloqueos
                     a.download = `Inmoinnova_${timestampUnico}_Foto_${i + 1}.jpg`;
                     
                     document.body.appendChild(a);
                     a.click();
                     
-                    // Pausa precisa de 500ms para que el navegador procese la descarga individual en el sistema de archivos
-                    await new Promise(r => setTimeout(r, 500));
+                    // Pausa de 600ms para asegurar que el sistema operativo registre cada foto individualmente en la galería
+                    await new Promise(r => setTimeout(r, 600));
                     
                     window.URL.revokeObjectURL(urlLocal);
                     document.body.removeChild(a);
                 }
+                alert("¡Descarga de fotos completada con éxito!");
             } catch (error) {
                 console.error("Error en la descarga:", error);
-                // Respaldo por seguridad si el navegador interrumpe
-                urls.forEach(url => window.open(url, '_blank'));
+                alert("Hubo un bloqueo en la descarga. Asegúrate de permitir las 'descargas múltiples' o 'descargas automáticas' en la configuración de tu navegador.");
             }
         }
-
+        
         function editarInmueble(id, inm) {
             document.getElementById('texto-btn-acordeon').innerText = "Editando Propiedad...";
             document.getElementById('form-title').innerText = "Editar Inmueble";
@@ -384,12 +380,10 @@
             toggleAcordeonCarga(true);
             window.scrollTo({ top: document.getElementById('contenedor-formulario').offsetTop - 20, behavior: 'smooth' });
         }
-
         function cancelarEdicion() {
             resetFormulario();
             toggleAcordeonCarga();
         }
-
         function resetFormulario() {
             document.getElementById('edit-inmueble-id').value = "";
             document.getElementById('inm-tipo').value = "";
@@ -401,7 +395,6 @@
             document.getElementById('texto-btn-acordeon').innerText = "Registrar Nuevo Inmueble";
             document.getElementById('form-title').innerText = "Formulario de Propiedad";
         }
-
         // =========================================================================
         // MOTOR DE BORRADO DE ARCHIVOS EN R2 VÍA VERCEL (ACTUALIZAR Y BORRAR)
         // =========================================================================
@@ -417,7 +410,6 @@
                 console.log("Error al limpiar archivos en R2:", e);
             }
         }
-
         async function guardarInmueble(event) {
             event.preventDefault();
             const id = document.getElementById('edit-inmueble-id').value;
@@ -431,7 +423,6 @@
             
             const btnGuardar = document.getElementById('btn-guardar');
             btnGuardar.disabled = true;
-
             try {
                 let fotos_urls = [];
                 let fotosAntiguas = [];
@@ -486,7 +477,6 @@
                 btnGuardar.disabled = false;
             }
         }
-
         async function eliminarInmueble(id) {
             if (!confirm("¿Estás seguro de eliminar este inmueble permanentemente?")) return;
             const { data: inmueble } = await supabaseClient.from('inmuebles').select('fotos_urls').eq('id', id).single();
@@ -494,7 +484,6 @@
             await supabaseClient.from('inmuebles').delete().eq('id', id);
             cargarMisInmuebles();
         }
-
         async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
         
         verificarSesion();
